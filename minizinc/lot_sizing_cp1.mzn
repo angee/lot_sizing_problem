@@ -6,7 +6,10 @@
 % ====================================================================
 
 include "global_cardinality.mzn";
-include "at_least.mzn";
+include "exactly.mzn"; % for "no-production" variables
+include "alldifferent.mzn";  % for redundant constraint
+include "at_least.mzn"; % for redundant constraint
+include "at_most.mzn"; % for redundant constraint
 
 % set to "true" if you want to use the "no-production" variables
 bool: use_no_production_vars = false;
@@ -53,8 +56,6 @@ array[Orders] of var 0..inventory_cost*max(due_period): inventory_periods;
 array[1..nb_periods-1] of var 0..max(change_cost): change_cost_for_period;
 % is set to 0 if there is no production in the time period
 array[Periods] of var 0..1: no_production;
-% the order in which the orders are produced
-array[Orders] of var Orders: order_of_orders;
 % the order in which orders are produced
 array[Periods] of var Orders0: production_order; 
 
@@ -111,7 +112,8 @@ constraint
 constraint 
    forall (order in Orders) (
        production_by_order[production_period[order]] = order
-   );
+   );  
+constraint alldifferent(production_period);
    
 % the number of periods that inventory is necessary for each order   
 constraint 
@@ -123,8 +125,9 @@ constraint
 constraint 
    if use_no_production_vars then
       forall (p in Periods) (
-          (production_by_order[p] == 0) <-> (no_production[p] = 1)
-          /\ (production_by_order[p] > 0) <-> (no_production[p] = 0) 
+          ((production_by_order[p] == 0) <-> (no_production[p] = 1))
+          /\ ((production_by_order[p] > 0) <-> (no_production[p] = 0) )
+          /\ (exactly(nb_periods - nb_orders, no_production, 1))
           )
    else   
       forall (p in Periods) ( no_production[p] = 0)
@@ -153,6 +156,12 @@ constraint
       )
   endif
 ;
+
+constraint 
+   forall(o in Orders) (
+      at_least(1, production_order, o) /\
+      at_most(1 + (nb_periods - nb_orders), production_order, o)
+   );
 
 % the change cost is applied when changing from one item type to another  
 constraint 
