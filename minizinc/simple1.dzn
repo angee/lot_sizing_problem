@@ -1,0 +1,18 @@
+nb_item_types = 2;
+nb_orders = 4;
+nb_periods = 5;
+
+inventory_cost = 2;
+% order of orders: type-1_1, type-1_2, type-2_1, type-2_2
+due_period = [2,5,1,5];
+change_cost = array2d(Orders0, Orders0, 
+  % 0  o1 o2 o3 o4
+  [ 0, 0, 0, 0, 0,  % 0
+    0, 0, 0, 5, 5,  % o1
+    0, 0, 0, 5, 5,  % o2
+    0, 3, 3, 0, 0,  % o3
+    0, 3, 3, 0, 0   % o4
+    ]
+);
+nb_of_orders = [2, 2];
+item_type = array1d(0..nb_orders, [0, 1, 1, 2, 2]);
