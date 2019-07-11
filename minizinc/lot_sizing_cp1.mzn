@@ -10,6 +10,7 @@ include "exactly.mzn"; % for "no-production" variables
 include "alldifferent.mzn";  % for redundant constraint
 include "at_least.mzn"; % for redundant constraint
 include "at_most.mzn"; % for redundant constraint
+include "regular.mzn"; % for production_order constraint and c
 
 % set to "true" if you want to use the "no-production" variables
 bool: use_no_production_vars = false;
@@ -141,7 +142,7 @@ constraint
  if use_no_production_vars then
     forall (p in 2..nb_periods) (
       if no_production[p] == 1 then 
-          production_order[p] = production_by_order[p-1]
+          production_order[p] = production_order[p-1]
       else 
           production_order[p] = production_by_order[p]
       endif
@@ -149,7 +150,7 @@ constraint
   else
     forall (p in 2..nb_periods) (
       if production_by_order[p] == 0 then 
-          production_order[p] = production_by_order[p-1]
+          production_order[p] = production_order[p-1]
       else 
           production_order[p] = production_by_order[p]
       endif
@@ -162,7 +163,37 @@ constraint
       at_least(1, production_order, o) /\
       at_most(1 + (nb_periods - nb_orders), production_order, o)
    );
+   
+% regular constraint for the production order: zeros at beginning allowed, but then only followed by positive numbers
 
+%   0             (1..nbOrders)     (0..nbOrders)
+%   _                   __             __
+%  | |                 |  |           |  |
+%  | v (1..nbOrders)   |  v   0       |  v
+%  Q0  ------------->   Q1 --------->  Q2
+
+% int: Q0 = 1;  % start state
+% int: Q1 = 2;  % accepting state
+% int: Q2 = 3;  % non-accepting state 
+% set of int: DFA_States = 1..3;
+
+% constraint 
+%   regular(production_order,
+%       3,  % number of states of the DFA
+%       nb_periods, % input length to the DFA
+%       transition,
+%       Q0,   % start state
+%       {Q1}  % accepting state(s)
+%       );
+      
+% array[DFA_States, Periods] of DFA_States: transition =     
+% array2d(DFA_States, Periods,       
+%   [  if state == Q0 /\ order-1 > 0 then Q1  % first transition Q0 -> Q1
+%      elseif order-1 == 0 /\ state == Q1 then Q2  % second transition Q1 -> Q2
+%      else state  % otherwise, stay in the same state  
+%      endif
+%       |  order in Periods, state in DFA_States]
+% );
 % the change cost is applied when changing from one item type to another  
 constraint 
    forall (p in 1..nb_periods-1) (
