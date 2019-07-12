@@ -15,7 +15,7 @@ include "regular.mzn"; % for production_order constraint and c
 % set to "true" if you want to use the "no-production" variables
 bool: use_no_production_vars = false;
 % set to "true" if you want to use the "production_by_item" variables
-bool: use_production_by_item_vars = true;
+bool: use_production_by_item_vars = false;
 
 int: nb_item_types;   % different item types to produce
 int: nb_orders;       % the total number of orders
@@ -194,11 +194,33 @@ constraint
 %      endif
 %       |  order in Periods, state in DFA_States]
 % );
+
+
 % the change cost is applied when changing from one item type to another  
 constraint 
    forall (p in 1..nb_periods-1) (
         change_cost_for_period[p] = change_cost[production_order[p], production_order[p+1]]
    );
+   
+% breaking symmetry: complete orders of same type in a fixed order (the ones first are produced first) 
+constraint 
+  forall(item_type in Items) (
+     if nb_of_orders[item_type] > 1 then
+        forall(k in 1..(nb_of_orders[item_type]-1)) (
+            production_period[order_number(item_type, k)] < production_period[order_number(item_type, k+1)]
+        )
+     else true 
+     endif
+  );
+  
+% returns the order number of the k-th order of item_type  
+function int: order_number(Items: item_type, int: k) = 
+   if item_type == 1 
+     then k
+   else 
+      sum( [ nb_of_orders[item] | item in 1..item_type-1 ]) + k 
+   endif; 
+
 
 % the objective is the sum of the total change costs and the total inventory costs
 var 0..(max(change_cost)*nb_orders): objective;
