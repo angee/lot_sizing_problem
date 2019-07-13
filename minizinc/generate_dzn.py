@@ -48,11 +48,13 @@ def extract_orders_and_due_time(lines: list, nb_item_types: int) -> (list, list,
     due_period = []
     for item in range(nb_item_types):
         line = lines[item + 2].split(' ')
+        print(str(line))
         nb_orders_per_item_type = 0
         for idx, val in enumerate(line):
-            if val == "1":
+            if val == "1" or val == "1\n":
                 nb_orders_per_item_type += 1
                 due_period.append(idx)
+                print("idx = " + str(idx) + "val = " + str(val))
         orders_per_item_type.append(nb_orders_per_item_type)
     nb_orders = sum(orders_per_item_type)
     return orders_per_item_type, due_period, nb_orders
@@ -121,14 +123,8 @@ def generate_dzn_file(filename: str):
         for i_type in item_type_of_order:
             f.write(str(i_type) + ", ")
         f.write("]);\n")
-
-
-
     f.close()
     print("Written DZN file into: " + filename + ".dzn")
-
-
-
 
 
 def main():
