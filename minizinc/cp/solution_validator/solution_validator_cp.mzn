@@ -6,7 +6,7 @@
 % Andrea Rendl, July 2019
 % ====================================================================
 
-include "lot_sizing_cp1_params.mzn";
+include "lot_sizing_cp_params.mzn";
 
 % The sequence of orders that are produced
 array[Periods] of Orders0: production_by_order;
