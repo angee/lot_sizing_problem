@@ -153,7 +153,8 @@ constraint
         )
      else true 
      endif
-  );
+  );  
+      
   
 % returns the order number of the k-th order of item_type  
 function int: order_number(Items: item_type, int: k) = 
@@ -170,4 +171,5 @@ constraint
    objective = sum(p in 1..nb_periods-1) (change_cost_for_period[p]) 
                + sum(o in Orders) (inventory_periods[o]) * inventory_cost;
 
-solve minimize objective;
+solve :: int_search(production_by_order, first_fail, indomain_random, complete)
+  minimize objective;
