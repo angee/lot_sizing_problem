@@ -36,8 +36,8 @@ def extract_info_from_file(filename: str) -> (int, int, list, list, int, int, li
         # read the due dates and orders
         orders_per_item_type, due_period, nb_orders = extract_orders_and_due_time(lines=lines, nb_item_types=nb_item_types)
         # read the inventory cost
+        print("inventory_cost = " + str(lines[2+nb_item_types]))
         inventory_cost = int(lines[2+nb_item_types])
-        print("inventory cost = " + str(inventory_cost))
         # read the change cost matrix
         change_cost = extract_change_cost(lines=lines, nb_item_types=nb_item_types)
     return nb_periods, nb_item_types, orders_per_item_type, due_period, nb_orders, inventory_cost, change_cost
@@ -48,13 +48,11 @@ def extract_orders_and_due_time(lines: list, nb_item_types: int) -> (list, list,
     due_period = []
     for item in range(nb_item_types):
         line = lines[item + 2].split(' ')
-        print(str(line))
         nb_orders_per_item_type = 0
         for idx, val in enumerate(line):
             if val == "1" or val == "1\n":
                 nb_orders_per_item_type += 1
                 due_period.append(idx)
-                print("idx = " + str(idx) + "val = " + str(val))
         orders_per_item_type.append(nb_orders_per_item_type)
     nb_orders = sum(orders_per_item_type)
     return orders_per_item_type, due_period, nb_orders
@@ -64,10 +62,8 @@ def extract_change_cost(lines: list, nb_item_types: int) -> list:
     change_cost = [[] for _ in range(nb_item_types)]
     for item1 in range(nb_item_types):
         line = lines[4 + nb_item_types + item1].split(' ')
-        print("line " + str(item1) + ": " + str(line))
         for item2 in range(nb_item_types):
             change_cost[item1].append(int(line[item2]))
-    print("change_cost = " + str(change_cost))
     return change_cost
 
 
