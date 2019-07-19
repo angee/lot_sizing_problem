@@ -11,7 +11,7 @@ include "lot_sizing_cp_params.mzn";
 % The sequence of orders that are produced
 array[Periods] of Orders0: production_by_order;
 % the sequence of item types that are produced
-array[Periods] of Items0: production_by_item; % adding this var reduces search tree!
+array[Periods] of Items0: production_by_item = array1d(Periods, [ item_type[production_by_order[p]] | p in Periods] ); % adding this var reduces search tree!
 % For each order, the time period in which it is produced
 array[Orders] of Periods: production_period;
 % the inventory periods that are required for the production plan 
@@ -20,7 +20,7 @@ array[Orders] of 0..inventory_cost*max(due_period): inventory_periods;
 % the change cost for changing the machine setup from period p to p+1
 array[1..nb_periods-1] of 0..max(change_cost): change_cost_for_period;
 % is set to 0 if there is no production in the time period
-array[Periods] of 0..1: no_production;
+array[Periods] of 0..1: no_production = array1d(Periods, [ if production_by_order[p] == 0 then 1 else 0 endif | p in Periods]);
 % the order in which orders are produced
 array[Periods] of Orders0: production_order;
 int: objective;
