@@ -1,15 +1,36 @@
-% ====================================================================
-% Lot Sizing problem: Optimisation challenge
+% ===============================================================================
+% Discrete Lot Sizing problem
 %
-% CP Model version 1.0
+% CSPlib Problem 58: http://www.csplib.org/Problems/prob058/
+% MIT License
+%
+% Copyright (c) 2019 Andrea Rendl-Pitrey, Satalia
+%
+% Permission is hereby granted, free of charge, to any person obtaining a copy
+% of this software and associated documentation files (the "Software"), to deal
+% in the Software without restriction, including without limitation the rights
+% to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+% copies of the Software, and to permit persons to whom the Software is
+% furnished to do so, subject to the following conditions:
+% 
+% The above copyright notice and this permission notice shall be included in all
+% copies or substantial portions of the Software.
+%
+% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+% IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+% FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+% AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+% LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+% OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+% SOFTWARE.
+% 
 % Andrea Rendl, July 2019
-% ====================================================================
+% ===============================================================================
 
 include "global_cardinality.mzn";
-include "alldifferent.mzn";  % for redundant constraint
-include "at_least.mzn"; % for redundant constraint
-include "at_most.mzn"; % for redundant constraint
-include "regular.mzn"; % for production_order constraint and c
+include "alldifferent.mzn";  % for redundant constraint-1
+include "at_least.mzn"; % for redundant constraint-2
+include "at_most.mzn"; % for redundant constraint-2
 
 int: nb_item_types;   % different item types to produce
 int: nb_orders;       % the total number of orders
@@ -36,7 +57,7 @@ array[Items] of int: nb_of_orders;
 % maps each order to its item type
 array[Orders0] of Items0: item_type; 
 
-% =============== VARIABLES ==========================================
+% =============== VARIABLES =====================================================
 
 % The sequence of orders that are produced
 array[Periods] of var Orders0: production_by_order;
@@ -50,7 +71,7 @@ array[1..nb_periods-1] of var 0..max(change_cost): change_cost_for_period;
 % the order in which orders are produced
 array[Periods] of var Orders0: production_order; 
 
-% =============== CONSTRAINTS =========================================
+% =============== CONSTRAINTS ===================================================
                         
 % sets the number of times each order has to appear in the production plan
 % each order has to be produced exactly once.
@@ -73,20 +94,25 @@ constraint
       )
    );         
 
+
 % Linking the production_period variables with the main order variables
 constraint 
    forall (order in Orders) (
        production_by_order[production_period[order]] = order
-   );  
+   ); 
+% redundant constraint-1   
 constraint alldifferent(production_period);
    
-% the number of periods that inventory is necessary for each order   
+   
+% sets the number of periods that inventory is necessary for each order   
 constraint 
    forall(order in Orders) (  
        inventory_periods[order] = due_period[order] - production_period[order]
    );   
 
-% set "production_order" to the order in which items are produced   
+
+% set "production_order" to the order in which items are produced. We will use this variables
+% to impose the change_cost constraints   
 constraint 
     production_order[1] = production_by_order[1];  
 constraint 
@@ -98,43 +124,12 @@ constraint
       endif
       )
 ;
-
+% redundant constraints-2 (sometimes they improve performance, sometimes not)
 constraint 
    forall(o in Orders) (
       at_least(1, production_order, o) /\
       at_most(1 + (nb_periods - nb_orders), production_order, o)
-   );
-   
-% regular constraint for the production order: zeros at beginning allowed, but then only followed by positive numbers
-
-%   0             (1..nbOrders)     (0..nbOrders)
-%   _                   __             __
-%  | |                 |  |           |  |
-%  | v (1..nbOrders)   |  v   0       |  v
-%  Q0  ------------->   Q1 --------->  Q2
-
-% int: Q0 = 1;  % start state
-% int: Q1 = 2;  % accepting state
-% int: Q2 = 3;  % non-accepting state 
-% set of int: DFA_States = 1..3;
-
-% constraint 
-%   regular(production_order,
-%       3,  % number of states of the DFA
-%       nb_periods, % input length to the DFA
-%       transition,
-%       Q0,   % start state
-%       {Q1}  % accepting state(s)
-%       );
-      
-% array[DFA_States, Periods] of DFA_States: transition =     
-% array2d(DFA_States, Periods,       
-%   [  if state == Q0 /\ order-1 > 0 then Q1  % first transition Q0 -> Q1
-%      elseif order-1 == 0 /\ state == Q1 then Q2  % second transition Q1 -> Q2
-%      else state  % otherwise, stay in the same state  
-%      endif
-%       |  order in Periods, state in DFA_States]
-% );
+   ); 
 
 
 % the change cost is applied when changing from one item type to another  
@@ -165,11 +160,17 @@ function int: order_number(Items: item_type, int: k) =
    endif; 
 
 
+% =============== OBJECTIVE =====================================================
+
+int: upper_bound = max(change_cost)*nb_orders + inventory_cost*(nb_orders*nb_periods);
+var 0..upper_bound: objective;
+
 % the objective is the sum of the total change costs and the total inventory costs
-var 0..(max(change_cost)*nb_orders): objective;
 constraint 
    objective = sum(p in 1..nb_periods-1) (change_cost_for_period[p]) 
                + sum(o in Orders) (inventory_periods[o]) * inventory_cost;
 
-solve :: int_search(production_by_order, first_fail, indomain_random, complete)
+solve :: seq_search(
+                [int_search(production_by_order, first_fail, indomain_random, complete),
+                 int_search(inventory_periods, impact, indomain_min, complete)])               
   minimize objective;
