@@ -74,7 +74,8 @@ class LotSizingInstance {
 
     std::string line;
     while(type_cnt < num_types && std::getline(infile, line)) {
-      std::getline(infile, line);
+      if (line.size() == 0)
+        continue;
       std::stringstream iss(line);
       int order_cnt_per_type = 0;
       // read the line for the item type
