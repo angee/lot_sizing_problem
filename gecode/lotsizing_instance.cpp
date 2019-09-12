@@ -1,7 +1,3 @@
-//
-// Created by andrea on 12.09.19.
-//
-
 #include "lotsizing_instance.h"
 #include <iostream>
 
@@ -10,15 +6,15 @@ void LotSizingInstance::print() const {
   std::cout << "#ItemTypes = " << num_types << std::endl;
   std::cout << "#Orders = " << num_orders << std::endl;
   std::cout << "inventory_cost = " << inventory_cost << std::endl;
-  std::cout << "\ndue_periods = ";
+  std::cout << "due_periods = ";
   for (auto i = due_period_per_order.begin(); i != due_period_per_order.end(); ++i)
     std::cout << *i << " ";
   std::cout << std::endl;
-  std::cout << "\nnum_order_per_item = ";
+  std::cout << "num_order_per_item = ";
   for (auto i = num_orders_per_type.begin(); i != num_orders_per_type.end(); ++i)
     std::cout << *i << " ";
   std::cout << std::endl;
-  std::cout << "\nchange_costs = \n";
+  std::cout << "change_costs = \n";
   for (auto i = change_costs.begin(); i != change_costs.end(); ++i) {
     for (auto j = (*i).begin(); j != (*i).end(); ++j) {
       std::cout << *j << " ";
@@ -26,6 +22,24 @@ void LotSizingInstance::print() const {
     std::cout << std::endl;
   }
   std::cout << std::endl;
+}
+
+int LotSizingInstance::getTypeOfOrder(const int order) const {
+  int order_cnt = 0;
+  int order_per_type_cnt = 0;
+  int type = 0;
+  // count the number of orders per type until we reached the order number
+  while(order_cnt < order) {
+    if(order_per_type_cnt == num_orders_per_type[type]) {
+      type++;
+      order_per_type_cnt = 0;
+    }
+    else {
+      order_per_type_cnt++;
+    }
+    order_cnt++;
+  }
+  return type;
 }
 
 void LotSizingInstanceReader::readInputFile(const std::string &input_filename) {

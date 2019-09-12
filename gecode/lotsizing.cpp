@@ -42,8 +42,8 @@ using namespace Gecode;
 
 class LotSizing : public IntMinimizeScript {
  protected:
-  LotSizingInstanceReader reader;
-  LotSizingInstance instance;
+  const InstanceOptions &options;
+  const LotSizingInstance &instance;
 
   IntVarArray production_by_order;
   IntVarArray production_period;
@@ -52,9 +52,9 @@ class LotSizing : public IntMinimizeScript {
   IntVarArray production_order; // FIXME: can it be an IntVarArgs array?
 
  public:
-  LotSizing(const InstanceOptions &opt) : IntMinimizeScript(opt), reader(opt.instance()), instance(reader.generateInstance()) { //, instance((LotSizingInstanceReader(opt.instance)).generateInstance()) {
-    //LotSizingInstanceReader reader(opt.instance());
-    //instance = reader.generateInstance();
+  LotSizing(const InstanceOptions &opt)
+      : IntMinimizeScript(opt), options(opt),
+        instance((LotSizingInstanceReader(opt.instance())).generateInstance()) {
     instance.print();
     // TODO: problem model
   }
