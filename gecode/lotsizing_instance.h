@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 class LotSizingInstance {
  private:
@@ -38,6 +39,18 @@ class LotSizingInstance {
       num_orders_per_type(std::move(_num_orders_per_type)),
       change_costs(std::move(_change_costs)) {}
 
+  // copy constructor
+  LotSizingInstance(const LotSizingInstance &l) :
+      num_periods(l.num_periods),
+      num_types(l.num_types),
+      num_orders(l.num_orders),
+      inventory_cost(l.inventory_cost),
+      due_period_per_order(l.due_period_per_order),
+      num_orders_per_type(l.num_orders_per_type),
+      change_costs(l.change_costs) {
+    std::cout << "Copied instance. num_periods = " << num_periods << std::endl;
+  }
+
   /** prints a summary of the instance setup */
   void print() const;
 
@@ -57,8 +70,8 @@ class LotSizingInstance {
     return inventory_cost;
   }
 
-  int getDuePeriod(const int order) {
-    if(order < 0 || order >= num_orders) {
+  int getDuePeriod(int order) const {
+    if (order < 0 || order >= num_orders) {
       std::stringstream error_msg;
       error_msg << "Invalid order number: " << order;
       throw std::runtime_error(error_msg.str());
@@ -67,12 +80,11 @@ class LotSizingInstance {
   }
 
   int getChangeCosts(int orderFrom, int orderTo) const {
-    if(orderFrom < 0 || orderFrom >= num_orders) {
+    if (orderFrom < 0 || orderFrom >= num_orders) {
       std::stringstream error_msg;
       error_msg << "Invalid order number: " << orderFrom;
       throw std::runtime_error(error_msg.str());
-    }
-    else if(orderTo < 0 || orderTo >= num_orders) {
+    } else if (orderTo < 0 || orderTo >= num_orders) {
       std::stringstream error_msg;
       error_msg << "Invalid order number: " << orderTo;
       throw std::runtime_error(error_msg.str());
@@ -88,7 +100,6 @@ class LotSizingInstance {
 
   /** returns the upper bound for the objective */
   int calculateUpperBoundForObjective() const;
-
 
  private:
   int getTypeOfOrder(int order) const;

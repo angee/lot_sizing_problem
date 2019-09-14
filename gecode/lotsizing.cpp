@@ -42,8 +42,9 @@ using namespace Gecode;
 
 class LotSizing : public IntMinimizeScript {
  protected:
+  const Rnd rnd;
   const InstanceOptions &options;
-  const LotSizingInstance &instance;
+  const LotSizingInstance instance;
 
   /** The sequence of orders that are produced:
     array[Periods] of var Orders0: production_by_order; */
@@ -66,7 +67,7 @@ class LotSizing : public IntMinimizeScript {
 
  public:
   LotSizing(const InstanceOptions &opt)
-      : IntMinimizeScript(opt), options(opt),
+      : IntMinimizeScript(opt), options(opt), rnd(11),
       // read the instance
         instance((LotSizingInstanceReader(opt.instance())).generateInstance()),
       // initialise the variable arrays
@@ -76,14 +77,35 @@ class LotSizing : public IntMinimizeScript {
         change_cost_for_period(*this, instance.getPeriods() - 1, 0, instance.calculateMaxChangeCost()),
         production_order(*this, instance.getPeriods(), 0, instance.getOrders()),
         objective(*this, 0, instance.calculateUpperBoundForObjective()) {
+    // print the instance for debug reasons
     instance.print();
 
+    /// CONSTRAINTS
+
+    // (1) the number of times each order is produced
+    for(unsigned order = 1; order <= instance.getOrders(); order++) {
+      count(*this, production_by_order, order, IRT_EQ, 1); // each order is produced exactly once
+    }
+    count(*this, production_by_order, 0, IRT_EQ, instance.getPeriods() - instance.getOrders()); // idle times
+
+    // (2) Don't produce the order AFTER its due date
+    for(unsigned order = 0; order < instance.getOrders(); order++) {
+      for(unsigned period = 0; period < instance.getPeriods(); period++) {
+        if(instance.getDuePeriod(order) < period) {
+          // production_by_order[period] != order
+          rel(*this, production_by_order[period] != order);
+        }
+      }
+    }
 
     // TODO: problem model
+
+    // branching instructions
+    branch(*this, production_by_order, INT_VAR_SIZE_MIN(), INT_VAL_RND(rnd));
   }
 
   // constructor for cloning
-  LotSizing(LotSizing &l) : IntMinimizeScript(l.options), options(l.options), instance(l.instance) {
+  LotSizing(LotSizing &l) : IntMinimizeScript(l), options(l.options), rnd(l.rnd.seed()), instance(l.instance) {
     production_by_order.update(*this, l.production_by_order);
     production_period.update(*this, l.production_period);
     inventory_periods.update(*this, l.inventory_periods);
@@ -98,6 +120,16 @@ class LotSizing : public IntMinimizeScript {
 
   virtual IntVar cost(void) const {
     return objective;
+  }
+
+  /// Print solution
+  virtual void print(std::ostream& os) const {
+    os << "production_order = [";
+    for(unsigned period = 0; period < instance.getPeriods(); period++) {
+      os << production_by_order[period].val() << ", ";
+    }
+    os << "];\n";
+    //os << "objective = " << objective.val() << "\n";
   }
 
 };
