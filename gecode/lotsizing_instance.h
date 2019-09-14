@@ -80,6 +80,12 @@ class LotSizingInstance {
     return change_costs[getTypeOfOrder(orderFrom)][getTypeOfOrder(orderTo)];
   }
 
+  /** returns the maximal change cost between two item types */
+  int calculateMaxChangeCost() const;
+
+  /** returns the maximum (latest) due period of an order */
+  int calculateMaxDuePeriod() const;
+
 
  private:
   int getTypeOfOrder(int order) const;

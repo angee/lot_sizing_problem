@@ -35,7 +35,7 @@ using namespace Gecode;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
- * Author: Andrea Rendl, July 2019
+ * Author: Andrea Rendl, September 2019
  *
  */
 
@@ -45,22 +45,51 @@ class LotSizing : public IntMinimizeScript {
   const InstanceOptions &options;
   const LotSizingInstance &instance;
 
+  /** The sequence of orders that are produced:
+    array[Periods] of var Orders0: production_by_order; */
   IntVarArray production_by_order;
+  /** For each order, the time period in which it is produced:<br>
+    array[Orders] of var Periods: production_period; */
   IntVarArray production_period;
+  /** the inventory periods that are required for the production plan
+      (i.e. the number of periods the order is completed before the due date)
+    array[Orders] of var 0..max(due_period): inventory_periods; */
   IntVarArray inventory_periods;
+  /** the change cost for changing the machine setup from period p to p+1
+    array[1..nb_periods-1] of var 0..max(change_cost): change_cost_for_period; */
   IntVarArray change_cost_for_period;
+  /** the order in which orders are produced
+    array[Periods] of var Orders0: production_order; */
   IntVarArray production_order; // FIXME: can it be an IntVarArgs array?
 
  public:
   LotSizing(const InstanceOptions &opt)
       : IntMinimizeScript(opt), options(opt),
-        instance((LotSizingInstanceReader(opt.instance())).generateInstance()) {
+      // read the instance
+        instance((LotSizingInstanceReader(opt.instance())).generateInstance()),
+      // initialise the variable arrays
+        production_by_order(*this, instance.getPeriods(), 0, instance.getOrders()),
+        production_period(*this, instance.getOrders(), 0, instance.getPeriods() - 1),
+        inventory_periods(*this, instance.getOrders(), 0, instance.calculateMaxDuePeriod()),
+        change_cost_for_period(*this, instance.getPeriods() - 1, 0, instance.calculateMaxChangeCost()),
+        production_order(*this, instance.getPeriods(), 0, instance.getOrders()) {
     instance.print();
+
+
     // TODO: problem model
   }
 
+  // constructor for cloning
+  LotSizing(LotSizing &l) : IntMinimizeScript(l.options), options(l.options), instance(l.instance) {
+    production_by_order.update(*this, l.production_by_order);
+    production_period.update(*this, l.production_period);
+    inventory_periods.update(*this, l.inventory_periods);
+    change_cost_for_period.update(*this, l.change_cost_for_period);
+    production_order.update(*this, production_order);
+  }
+
   virtual Space *copy(void) {
-    // TODO
+    return new LotSizing(*this);
   }
 
   virtual IntVar cost(void) const {

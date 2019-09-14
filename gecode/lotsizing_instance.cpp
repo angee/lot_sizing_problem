@@ -42,6 +42,21 @@ int LotSizingInstance::getTypeOfOrder(const int order) const {
   return type;
 }
 
+int LotSizingInstance::calculateMaxChangeCost() const {
+  int maximum = 0;
+  for ( auto vec : change_costs) {
+    int local_max = *std::max(vec.begin(), vec.end());
+    if (local_max > maximum) {
+      maximum = local_max;
+    }
+  }
+  return maximum;
+}
+
+int LotSizingInstance::calculateMaxDuePeriod() const {
+  return *std::max(due_period_per_order.begin(), due_period_per_order.end());
+}
+
 void LotSizingInstanceReader::readInputFile(const std::string &input_filename) {
   std::ifstream infile(input_filename);
   if (!infile.good()) {
