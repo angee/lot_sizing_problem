@@ -98,6 +98,21 @@ class LotSizing : public IntMinimizeScript {
       }
     }
 
+    // (3) Linking the production_period variables with the production_by_order variables
+    for(unsigned order = 1; order <= instance.getOrders(); order++) {
+      // production_by_order[production_period[order]] = order
+      element(*this, production_by_order, production_period[order-1], order);
+    }
+
+    // (4) Redundant constraints: alldiff(production_period)
+    distinct(*this, production_period);
+
+    // (5) sets the number of periods that inventory is necessary for each order
+    for(unsigned order = 0; order < instance.getOrders(); order++) {
+      // inventory_periods[order] = due_period[order] - production_period[order]
+      rel(*this, inventory_periods[order] == instance.getDuePeriod(order) - production_period[order]);
+    }
+
     // TODO: problem model
 
     // branching instructions
@@ -127,6 +142,16 @@ class LotSizing : public IntMinimizeScript {
     os << "production_order = [";
     for(unsigned period = 0; period < instance.getPeriods(); period++) {
       os << production_by_order[period].val() << ", ";
+    }
+    os << "];\n";
+    os << "production_period = [";
+    for(unsigned order = 0; order < instance.getOrders(); order++) {
+      os << production_period[order].val() << ", ";
+    }
+    os << "];\n";
+    os << "inventory_periods = [";
+    for(unsigned order = 0; order < instance.getOrders(); order++) {
+      os << inventory_periods[order].val() << ", ";
     }
     os << "];\n";
     //os << "objective = " << objective.val() << "\n";
