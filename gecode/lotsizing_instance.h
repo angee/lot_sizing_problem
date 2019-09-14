@@ -86,6 +86,9 @@ class LotSizingInstance {
   /** returns the maximum (latest) due period of an order */
   int calculateMaxDuePeriod() const;
 
+  /** returns the upper bound for the objective */
+  int calculateUpperBoundForObjective() const;
+
 
  private:
   int getTypeOfOrder(int order) const;

@@ -1,5 +1,6 @@
 #include "lotsizing_instance.h"
 #include <iostream>
+#include <algorithm>
 
 void LotSizingInstance::print() const {
   std::cout << "#Periods = " << num_periods << std::endl;
@@ -29,12 +30,11 @@ int LotSizingInstance::getTypeOfOrder(const int order) const {
   int order_per_type_cnt = 0;
   int type = 0;
   // count the number of orders per type until we reached the order number
-  while(order_cnt < order) {
-    if(order_per_type_cnt == num_orders_per_type[type]) {
+  while (order_cnt < order) {
+    if (order_per_type_cnt == num_orders_per_type[type]) {
       type++;
       order_per_type_cnt = 0;
-    }
-    else {
+    } else {
       order_per_type_cnt++;
     }
     order_cnt++;
@@ -44,8 +44,8 @@ int LotSizingInstance::getTypeOfOrder(const int order) const {
 
 int LotSizingInstance::calculateMaxChangeCost() const {
   int maximum = 0;
-  for ( auto vec : change_costs) {
-    int local_max = *std::max(vec.begin(), vec.end());
+  for (auto vec : change_costs) {
+    int local_max = *std::max_element(vec.begin(), vec.end());
     if (local_max > maximum) {
       maximum = local_max;
     }
@@ -54,7 +54,23 @@ int LotSizingInstance::calculateMaxChangeCost() const {
 }
 
 int LotSizingInstance::calculateMaxDuePeriod() const {
-  return *std::max(due_period_per_order.begin(), due_period_per_order.end());
+  return *std::max_element(due_period_per_order.begin(), due_period_per_order.end());
+}
+
+int LotSizingInstance::calculateUpperBoundForObjective() const {
+  // change costs: for each order, pick the max cost
+  int max_change_costs = 0;
+  for (unsigned order = 0; order < num_orders; order++) {
+    int item_type = getTypeOfOrder(order);
+    int max_change_cost_for_order = *std::max_element(change_costs[item_type].begin(), change_costs[item_type].end());
+    max_change_costs += max_change_cost_for_order;
+  }
+  // maximal inventory costs: every order is picked at the worst point
+  int max_inventory_cost = 0;
+  for (unsigned order = 0; order < num_orders; order++) {
+    max_inventory_cost += (due_period_per_order[order] - 1);
+  }
+  return max_change_costs + max_inventory_cost;
 }
 
 void LotSizingInstanceReader::readInputFile(const std::string &input_filename) {

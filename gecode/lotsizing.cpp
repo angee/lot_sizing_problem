@@ -61,6 +61,8 @@ class LotSizing : public IntMinimizeScript {
   /** the order in which orders are produced
     array[Periods] of var Orders0: production_order; */
   IntVarArray production_order; // FIXME: can it be an IntVarArgs array?
+  /** the objective: the sum of all costs */
+  IntVar objective;
 
  public:
   LotSizing(const InstanceOptions &opt)
@@ -72,7 +74,8 @@ class LotSizing : public IntMinimizeScript {
         production_period(*this, instance.getOrders(), 0, instance.getPeriods() - 1),
         inventory_periods(*this, instance.getOrders(), 0, instance.calculateMaxDuePeriod()),
         change_cost_for_period(*this, instance.getPeriods() - 1, 0, instance.calculateMaxChangeCost()),
-        production_order(*this, instance.getPeriods(), 0, instance.getOrders()) {
+        production_order(*this, instance.getPeriods(), 0, instance.getOrders()),
+        objective(*this, 0, instance.calculateUpperBoundForObjective()) {
     instance.print();
 
 
@@ -86,6 +89,7 @@ class LotSizing : public IntMinimizeScript {
     inventory_periods.update(*this, l.inventory_periods);
     change_cost_for_period.update(*this, l.change_cost_for_period);
     production_order.update(*this, production_order);
+    objective.update(*this, l.objective);
   }
 
   virtual Space *copy(void) {
@@ -93,7 +97,7 @@ class LotSizing : public IntMinimizeScript {
   }
 
   virtual IntVar cost(void) const {
-    // TODO
+    return objective;
   }
 
 };
