@@ -113,6 +113,24 @@ class LotSizing : public IntMinimizeScript {
       rel(*this, inventory_periods[order] == instance.getDuePeriod(order) - production_period[order]);
     }
 
+    // (6) set "production_order" to the order in which items are produced. We will use these variables
+    //     to impose the change_cost constraints
+
+    // binary helper variable that is 1 when production is zero
+    BoolVarArgs productionIsZero(*this, instance.getPeriods()-1, 0, 1);
+    for(unsigned period = 0; period < instance.getPeriods()-1; period++) {
+      // (production_is_zero) <-> production_by_order == 0
+      Reify r(productionIsZero[period]);
+      rel(*this, production_by_order[period+1], IRT_EQ, 0, r);
+    }
+    rel(*this, production_order[0], IRT_EQ, production_by_order[0]);
+    for(unsigned period = 1; period < instance.getPeriods(); period++) {
+        // production_is_zero[p] == 1 --> production_order[p] == production_order[p-1]
+      rel(*this, production_order[period], IRT_EQ, production_order[period-1], productionIsZero[period-1]);
+        // production_is_zero[p] == 0 --> production_order[p] == production_by_order[p]
+      rel(*this, (!productionIsZero[period-1]) >> (production_order[period] == production_by_order[period]));
+    }
+
     // TODO: problem model
 
     // branching instructions
@@ -125,7 +143,7 @@ class LotSizing : public IntMinimizeScript {
     production_period.update(*this, l.production_period);
     inventory_periods.update(*this, l.inventory_periods);
     change_cost_for_period.update(*this, l.change_cost_for_period);
-    production_order.update(*this, production_order);
+    production_order.update(*this, l.production_order);
     objective.update(*this, l.objective);
   }
 
@@ -152,6 +170,11 @@ class LotSizing : public IntMinimizeScript {
     os << "inventory_periods = [";
     for(unsigned order = 0; order < instance.getOrders(); order++) {
       os << inventory_periods[order].val() << ", ";
+    }
+    os << "];\n";
+    os << "production_order = [";
+    for(unsigned period = 0; period < instance.getPeriods(); period++) {
+      os << production_order[period].val() << ", ";
     }
     os << "];\n";
     //os << "objective = " << objective.val() << "\n";
