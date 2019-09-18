@@ -48,7 +48,6 @@ class LotSizingInstance {
       due_period_per_order(l.due_period_per_order),
       num_orders_per_type(l.num_orders_per_type),
       change_costs(l.change_costs) {
-    std::cout << "Copied instance. num_periods = " << num_periods << std::endl;
   }
 
   /** prints a summary of the instance setup */
@@ -76,21 +75,32 @@ class LotSizingInstance {
       error_msg << "Invalid order number: " << order;
       throw std::runtime_error(error_msg.str());
     }
-    return due_period_per_order[getTypeOfOrder(order)];
+    return due_period_per_order[order];
   }
 
   int getChangeCosts(int orderFrom, int orderTo) const {
     if (orderFrom < 0 || orderFrom >= num_orders) {
       std::stringstream error_msg;
-      error_msg << "Invalid order number: " << orderFrom;
+      error_msg << "Invalid from-order number: " << orderFrom;
       throw std::runtime_error(error_msg.str());
     } else if (orderTo < 0 || orderTo >= num_orders) {
       std::stringstream error_msg;
-      error_msg << "Invalid order number: " << orderTo;
+      error_msg << "Invalid to-order number: " << orderTo;
       throw std::runtime_error(error_msg.str());
     }
     return change_costs[getTypeOfOrder(orderFrom)][getTypeOfOrder(orderTo)];
   }
+
+  int getNumberOfOrders(int item_type) const {
+    if(item_type < 0 || item_type >= num_types) {
+      std::stringstream error_msg;
+      error_msg << "Invalid item-type number: " << item_type;
+      throw std::runtime_error(error_msg.str());
+    }
+    return num_orders_per_type[item_type];
+  }
+
+  int getOrderNumber(int item_type, int order_of_type) const;
 
   /** returns the maximal change cost between two item types */
   int calculateMaxChangeCost() const;
@@ -101,7 +111,7 @@ class LotSizingInstance {
   /** returns the upper bound for the objective */
   int calculateUpperBoundForObjective() const;
 
- private:
+  /** returns the item type of the given order */
   int getTypeOfOrder(int order) const;
 
 };

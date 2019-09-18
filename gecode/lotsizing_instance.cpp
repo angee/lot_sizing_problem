@@ -26,20 +26,40 @@ void LotSizingInstance::print() const {
 }
 
 int LotSizingInstance::getTypeOfOrder(const int order) const {
-  int order_cnt = 0;
-  int order_per_type_cnt = 0;
   int type = 0;
-  // count the number of orders per type until we reached the order number
-  while (order_cnt < order) {
-    if (order_per_type_cnt == num_orders_per_type[type]) {
-      type++;
-      order_per_type_cnt = 0;
-    } else {
-      order_per_type_cnt++;
-    }
-    order_cnt++;
+  if(order < num_orders_per_type[type]) {
+    return type;
+  }
+  int order_cnt = num_orders_per_type[type];
+  type++;
+  while(order >= num_orders_per_type[type] + order_cnt) {
+    order_cnt += num_orders_per_type[type];
+    type++;
   }
   return type;
+}
+
+int LotSizingInstance::getOrderNumber(int item_type, int order_of_type) const {
+  if (item_type < 0 || item_type >= num_types) {
+    std::stringstream error_msg;
+    error_msg << "invalid type number: " << item_type;
+    throw std::runtime_error(error_msg.str());
+  }
+  if (order_of_type < 0 || order_of_type >= num_orders_per_type[item_type]) {
+    std::stringstream error_msg;
+    error_msg << "invalid order_of_type number: " << order_of_type;
+    throw std::runtime_error(error_msg.str());
+  }
+  if (item_type == 0)
+    return order_of_type;
+
+  int order_number = 0;
+  unsigned type_cnt = 0;
+  while(type_cnt < item_type) {
+    order_number += num_orders_per_type[type_cnt];
+    type_cnt++;
+  }
+  return order_number + order_of_type;
 }
 
 int LotSizingInstance::calculateMaxChangeCost() const {
@@ -103,7 +123,7 @@ void LotSizingInstanceReader::readOrders(std::ifstream &infile) {
     // read the line for the item type
     while (period_cnt < num_periods && iss >> hasOrder) {
       if (hasOrder == 1) {
-        due_period_per_order.push_back(period_cnt + 1);
+        due_period_per_order.push_back(period_cnt);
         order_cnt++;
         order_cnt_per_type++;
       }
@@ -133,7 +153,7 @@ void LotSizingInstanceReader::readChangeCosts(std::ifstream &infile) {
   while (type_from < num_types && std::getline(infile, line)) {
     if (line.size() == 0)
       continue;
-    change_costs.push_back(std::vector<int>()); // initialise the vector for the type
+    change_costs.emplace_back(); // initialise the vector for the type
     std::stringstream iss(line);
     int type_to = 0;
     int change_cost;

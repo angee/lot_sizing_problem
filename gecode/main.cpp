@@ -15,8 +15,9 @@ int main(int argc, char **argv) {
   try {
     InstanceOptions opt("LotSizingProblem");
     opt.instance(parseInput(argc, argv));
+    opt.solutions(0);
 
-    IntMinimizeScript::run<LotSizing, DFS, InstanceOptions>(opt);
+    IntMinimizeScript::run<LotSizing, BAB, InstanceOptions>(opt);
     return 0;
   }
   catch (const std::runtime_error &e) {
