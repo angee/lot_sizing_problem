@@ -79,6 +79,10 @@ class LotSizingInstance {
   }
 
   int getChangeCosts(int orderFrom, int orderTo) const {
+    // the costs for idle time is zero
+    if (orderFrom == -1 | orderTo == -1) {
+      return 0.;
+    }
     if (orderFrom < 0 || orderFrom >= num_orders) {
       std::stringstream error_msg;
       error_msg << "Invalid from-order number: " << orderFrom;
@@ -113,6 +117,8 @@ class LotSizingInstance {
 
   /** returns the item type of the given order */
   int getTypeOfOrder(int order) const;
+
+  std::vector<int> getOrdersDueAfterPeriodOrderedByChangeCost(int period, int previous_order) const;
 
 };
 

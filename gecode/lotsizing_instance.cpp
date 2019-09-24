@@ -93,6 +93,25 @@ int LotSizingInstance::calculateUpperBoundForObjective() const {
   return max_change_costs + max_inventory_cost;
 }
 
+std::vector<int> LotSizingInstance::getOrdersDueAfterPeriodOrderedByChangeCost(int period, int previous_order) const {
+  std::vector<std::pair<int, int>> orders;
+  for (unsigned order = 0; order < due_period_per_order.size(); order++) {
+    if (due_period_per_order[order] > period)
+      orders.push_back(std::make_pair(getChangeCosts(previous_order, order), order));
+  }
+  std::sort(orders.begin(), orders.end());
+  std::vector<int> ordered_orders;
+  for (auto pair : orders) {
+    ordered_orders.push_back(pair.second);
+  }
+  int i = 0;
+  while (i < orders.size() && orders[i].first == 0) {
+    i++;
+  }
+  ordered_orders.insert(ordered_orders.begin() + i, -1); // insert the idle move after zero cost orders
+  return ordered_orders;
+}
+
 void LotSizingInstanceReader::readInputFile(const std::string &input_filename) {
   std::ifstream infile(input_filename);
   if (!infile.good()) {
@@ -114,7 +133,7 @@ void LotSizingInstanceReader::readOrders(std::ifstream &infile) {
 
   std::string line;
   while (type_cnt < num_types && std::getline(infile, line)) {
-    if (line.size() == 0)
+    if (line.empty())
       continue;
     std::stringstream iss(line);
     int order_cnt_per_type = 0;
@@ -139,7 +158,7 @@ void LotSizingInstanceReader::readInventoryCost(std::ifstream &infile) {
   std::string line;
   bool has_read_inventory_cost = false;
   while (!has_read_inventory_cost && std::getline(infile, line)) {
-    if (line.size() == 0)
+    if (line.empty())
       continue;
     std::stringstream iss(line);
     iss >> inventory_cost;
@@ -151,7 +170,7 @@ void LotSizingInstanceReader::readChangeCosts(std::ifstream &infile) {
   std::string line;
   int type_from = 0;
   while (type_from < num_types && std::getline(infile, line)) {
-    if (line.size() == 0)
+    if (line.empty())
       continue;
     change_costs.emplace_back(); // initialise the vector for the type
     std::stringstream iss(line);
