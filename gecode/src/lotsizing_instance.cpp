@@ -99,7 +99,7 @@ int LotSizingInstance::calculateUpperBoundForObjective() const {
 std::vector<int> LotSizingInstance::getOrdersDueAfterPeriodOrderedByChangeCost(int period, int previous_order) const {
   std::vector<std::pair<int, int>> orders;
   for (unsigned order = 0; order < due_period_per_order.size(); order++) {
-    if (due_period_per_order[order] > period)
+    if (due_period_per_order[order] >= period)
       orders.push_back(std::make_pair(getChangeCosts(previous_order, order), order));
   }
   std::sort(orders.begin(), orders.end());

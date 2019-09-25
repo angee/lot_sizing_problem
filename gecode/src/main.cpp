@@ -38,6 +38,9 @@ int main(int argc, char **argv) {
     InstanceOptions opt("LotSizingProblem");
     opt.solutions(0);
     opt.seed(11);
+    opt.iterations(10);
+    opt.relax(0.7); // destruction rate
+    opt.time(10 * 1000); // timeout for restart in milliseconds
     opt.branching(LotSizing::BRANCH_BASE);
     opt.branching(LotSizing::BRANCH_BASE, "base");
     opt.branching(LotSizing::BRANCH_GREEDY, "greedy");

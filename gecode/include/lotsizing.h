@@ -44,9 +44,14 @@ using namespace Gecode;
 
 class LotSizing : public IntMinimizeScript {
  protected:
+  /// random number generator
   const Rnd rnd;
+  /// the solving options
   const InstanceOptions &options;
+  /// problem instance/input
   const LotSizingInstance instance;
+  /// Relaxation probability for LNS
+  double percentage;
 
   /** The sequence of orders that are produced:
     array[Periods] of var Orders0: production_by_order; */
@@ -70,15 +75,16 @@ class LotSizing : public IntMinimizeScript {
  public:
   /// Branching to use for model
   enum {
-    BRANCH_BASE, ///< Use base branching: smallest domain and random value
-    BRANCH_GREEDY, ///< Use greedy branching: static var order and pick value with smallest change cost
-    BRANCH_GREEDY_DYNAMIC ///< Use dynamic greedy branching: smallest domain, and if previous value set, pick smallest change cost value
+    BRANCH_BASE, ///< Base branching: smallest domain and random value
+    BRANCH_GREEDY, ///< Greedy branching: static var order and pick value with smallest change cost
+    BRANCH_GREEDY_DYNAMIC ///< Dynamic greedy branching: smallest domain, and if predecessor value set, pick smallest change cost value
   };
 
   LotSizing(const InstanceOptions &opt);
 
   // constructor for cloning
-  LotSizing(LotSizing &l) : IntMinimizeScript(l), options(l.options), rnd(l.rnd.seed()), instance(l.instance) {
+  LotSizing(LotSizing &l)
+      : IntMinimizeScript(l), options(l.options), rnd(l.rnd.seed()), percentage(l.percentage), instance(l.instance) {
     production_by_order.update(*this, l.production_by_order);
     production_period.update(*this, l.production_period);
     inventory_periods.update(*this, l.inventory_periods);
@@ -97,6 +103,9 @@ class LotSizing : public IntMinimizeScript {
 
   /// Print solution
   virtual void print(std::ostream &os) const;
+
+  /// Slave function for restarts in LNS
+  bool slave(const MetaInfo &mi);
 
 };
 

@@ -1,6 +1,7 @@
 #include <lotsizing_dynamic_greedy_brancher.h>
 
 bool DynamicGreedyBranching::status(const Space &) const {
+  //std::cout << "Status\n";
   // we still have options for the current period
   if (!potential_orders.empty()) {
     return true;
@@ -33,10 +34,11 @@ bool DynamicGreedyBranching::status(const Space &) const {
 
   // all variables are assigned -> there is nothing left to do
   if (smallestDomainPeriod == -1) {
+    //std::cout << "Status: all assigned\n";
     return false;
   }
-
   current_period = smallestDomainPeriod;
+  //std::cout << "Status: production["  << current_period << "] is next with minDomainSize: " << minDomainSize << "\n";
   // We found a variables with a smallest domain siez and whose predecessor has already been assigned. This means that
   // we will apply the greedy approach in selecting values, based on the change costs from previous to this period.
   if (previousPeriodIsAssigned) {
@@ -57,6 +59,7 @@ bool DynamicGreedyBranching::status(const Space &) const {
   else {
     potential_orders = instance.getOrdersDueAfterPeriodOrderedByDuePeriod(current_period);
   }
+  //std::cout << "Status: production["  << current_period << "] is next with " << potential_orders.size() << " options (before removal)\n";
   // remove all order values that are not in the variable's domain
   auto it = potential_orders.begin();
   while (it != potential_orders.end()) {
@@ -64,5 +67,7 @@ bool DynamicGreedyBranching::status(const Space &) const {
       it = potential_orders.erase(it);
     } else it++;
   }
+  //std::cout << "Status: production["  << current_period << "] is next with " << potential_orders.size() << " options\n";
+  //std::cout << "Status: var has options:  " << production_by_order[current_period].max() << ".." << production_by_order[current_period].max() << "\n";
   return true;
 }

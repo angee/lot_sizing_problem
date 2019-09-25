@@ -4,7 +4,7 @@
 #include <lotsizing.h>
 
 LotSizing::LotSizing(const InstanceOptions &opt)
-    : IntMinimizeScript(opt), options(opt), rnd(opt.seed()),
+    : IntMinimizeScript(opt), options(opt), rnd(opt.seed()), percentage(opt.relax()),
     // read the instance
       instance((LotSizingInstanceReader(opt.instance())).generateInstance()),
     // initialise the variable arrays
@@ -181,5 +181,18 @@ void LotSizing::print(std::ostream &os) const {
   }
   os << "]\n";
   os << "objective = " << objective.val() << "\n--------------------------------------------\n";
+}
+
+bool LotSizing::slave(const MetaInfo &mi) {
+  //std::cout << "Slave\n";
+  if ((mi.type() == MetaInfo::RESTART) &&
+      (mi.restart() > 0) && (percentage > 0.0)) {
+    const LotSizing &l = static_cast<const LotSizing &>(*mi.last());
+    // TODO: all other variables should be arg vars, then there is no failure
+    relax(*this, production_by_order, l.production_by_order, rnd, percentage);
+    return false;
+  } else {
+    return true;
+  }
 }
 
