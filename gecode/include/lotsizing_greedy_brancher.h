@@ -28,11 +28,10 @@
  * SOFTWARE.
  *
  * Author: Andrea Rendl, September 2019
- *
  */
 
 #include <gecode/int.hh>
-#include "lotsizing_instance.h"
+#include <lotsizing_instance.h>
 
 using namespace Gecode;
 
@@ -128,5 +127,11 @@ class GreedyBranching : public Brancher {
       << " " << c.order;
   }
 };
+
+/// Post branching (assumes that \a s is sorted)
+inline void greedyBranching(Home home, const IntVarArgs &production_by_order, const LotSizingInstance &instance) {
+  ViewArray<Int::IntView> production(home, production_by_order);
+  return GreedyBranching::post(home, production, instance);
+}
 
 #endif //LOT_SIZING_PROBLEM_LOTSIZING_GREEDY_BRANCHER_H

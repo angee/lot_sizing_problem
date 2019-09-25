@@ -1,4 +1,7 @@
-#include "lotsizing_instance.h"
+/**
+ * @authors Andrea Rendl, Satalia
+ */
+#include <lotsizing_instance.h>
 #include <iostream>
 #include <algorithm>
 
