@@ -3,5 +3,5 @@ project(lot_sizing_problem)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(lotsizing main.cpp lotsizing_instance.cpp lotsizing_instance.h)
+add_executable(lotsizing main.cpp lotsizing_instance.cpp lotsizing_instance.h lotsizing_greedy_brancher.cpp lotsizing_greedy_brancher.h)
 target_link_libraries(lotsizing gecodeminimodel gecodedriver gecodegist gecodesearch gecodeint gecodekernel gecodesupport)
