@@ -4,18 +4,15 @@
 
 using namespace Gecode;
 
-char *parseInput(int argc, char **argv) {
-  if (argc != 2) {
-    throw std::runtime_error("Expecting exactly one input, the problem file path.");
-  }
-  return argv[1];
-}
-
 int main(int argc, char **argv) {
   try {
     InstanceOptions opt("LotSizingProblem");
-    opt.instance(parseInput(argc, argv));
     opt.solutions(0);
+    opt.branching(LotSizing::BRANCH_BASE);
+    opt.branching(LotSizing::BRANCH_BASE, "base");
+    opt.branching(LotSizing::BRANCH_GREEDY, "greedy");
+    //opt.branching(LotSizing::BRANCH_GREEDY_DYNAMIC, "greedy-dynamic");
+    opt.parse(argc, argv);
 
     IntMinimizeScript::run<LotSizing, BAB, InstanceOptions>(opt);
     return 0;

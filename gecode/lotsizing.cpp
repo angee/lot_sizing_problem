@@ -154,7 +154,7 @@ class GreedyBranching : public Brancher {
                      unsigned int a,
                      std::ostream &o) const {
     const Choice &c = static_cast<const Choice &>(_c);
-    o << "production_by_order[" << c.period << "] "
+    o << "prod[" << c.period << "] "
       << ((a == 0) ? "=" : "!=")
       << " " << c.order;
   }
@@ -192,6 +192,13 @@ class LotSizing : public IntMinimizeScript {
   IntVar objective;
 
  public:
+  /// Branching to use for model
+  enum {
+    BRANCH_BASE, ///< Use base branching: smallest domain and random value
+    BRANCH_GREEDY, ///< Use greedy branching: static var order and pick value with smallest change cost
+    BRANCH_GREEDY_DYNAMIC ///< Use dynamic greedy branching: smallest domain, and if previous value set, pick smallest change cost value
+  };
+
   LotSizing(const InstanceOptions &opt)
       : IntMinimizeScript(opt), options(opt), rnd(3),
       // read the instance
@@ -323,8 +330,12 @@ class LotSizing : public IntMinimizeScript {
     linear(*this, a, x, IRT_EQ, objective);
 
     // branching instructions
-    //branch(*this, production_by_order, INT_VAR_SIZE_MIN(), INT_VAL_RND(rnd));
-    greedyBranching(*this, production_by_order, instance);
+    switch (opt.branching()) {
+      case BRANCH_BASE:branch(*this, production_by_order, INT_VAR_SIZE_MIN(), INT_VAL_RND(rnd));
+        break;
+      case BRANCH_GREEDY:greedyBranching(*this, production_by_order, instance);
+        break;
+    }
   }
 
   // constructor for cloning
