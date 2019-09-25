@@ -148,7 +148,25 @@ class LotSizingInstance {
   /** returns the item type of the given order */
   int getTypeOfOrder(int order) const;
 
+  /**
+   * Returns the vector of orders that are due after the given period. They are also ordered by the amount of
+   * change costs that apply if order o is produced after the given previous order.
+   * @param period the period after which the orders must be due
+   * @param previous_order the previous order from which the change costs can be derived
+   * @return the vector of orders that are due after the given period, ordered by the amount of
+   * change costs that apply if order o is produced after the given previous order, where the orders with the
+   * cheapest change cost come first.
+   */
   std::vector<int> getOrdersDueAfterPeriodOrderedByChangeCost(int period, int previous_order) const;
+
+  /**
+   * Returns the vector of orders that are due after the given period. They are also ordered by how close the due
+   * period is where orders that are due earlier are at the beginning of the list.
+   * @param period the period after which the orders must be due
+   * @return the vector of orders that are due after the given period. They are also ordered by how close the due
+   * period is
+   */
+  std::vector<int> getOrdersDueAfterPeriodOrderedByDuePeriod(int period) const;
 
 };
 

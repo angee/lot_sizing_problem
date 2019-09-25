@@ -38,6 +38,7 @@
 
 #include <lotsizing_instance.h>
 #include <lotsizing_greedy_brancher.h>
+#include <lotsizing_dynamic_greedy_brancher.h>
 
 using namespace Gecode;
 

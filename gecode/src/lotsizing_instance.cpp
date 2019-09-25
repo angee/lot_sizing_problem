@@ -107,11 +107,32 @@ std::vector<int> LotSizingInstance::getOrdersDueAfterPeriodOrderedByChangeCost(i
   for (auto pair : orders) {
     ordered_orders.push_back(pair.second);
   }
+  // insert the idle move "-1" after all zero cost orders
   int i = 0;
   while (i < orders.size() && orders[i].first == 0) {
     i++;
   }
-  ordered_orders.insert(ordered_orders.begin() + i, -1); // insert the idle move after zero cost orders
+  ordered_orders.insert(ordered_orders.begin() + i, -1);
+  return ordered_orders;
+}
+
+std::vector<int> LotSizingInstance::getOrdersDueAfterPeriodOrderedByDuePeriod(int period) const {
+  std::vector<std::pair<int, int>> orders;
+  for (unsigned order = 0; order < due_period_per_order.size(); order++) {
+    if (due_period_per_order[order] >= period)
+      orders.push_back(std::make_pair(getDuePeriod(order), order));
+  }
+  std::sort(orders.begin(), orders.end());
+  std::vector<int> ordered_orders;
+  for (auto pair : orders) {
+    ordered_orders.push_back(pair.second);
+  }
+  // insert the idle move "-1" after all orders that are immediately due
+  int i = 0;
+  while (i < orders.size() && period - orders[i].first == 1) {
+    i++;
+  }
+  ordered_orders.insert(ordered_orders.begin() + i, -1);
   return ordered_orders;
 }
 

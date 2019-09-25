@@ -4,7 +4,7 @@
 #include <lotsizing.h>
 
 LotSizing::LotSizing(const InstanceOptions &opt)
-    : IntMinimizeScript(opt), options(opt), rnd(3),
+    : IntMinimizeScript(opt), options(opt), rnd(opt.seed()),
     // read the instance
       instance((LotSizingInstanceReader(opt.instance())).generateInstance()),
     // initialise the variable arrays
@@ -138,6 +138,8 @@ LotSizing::LotSizing(const InstanceOptions &opt)
     case BRANCH_BASE:branch(*this, production_by_order, INT_VAR_SIZE_MIN(), INT_VAL_RND(rnd));
       break;
     case BRANCH_GREEDY:greedyBranching(*this, production_by_order, instance);
+      break;
+    case BRANCH_GREEDY_DYNAMIC:dynamicGreedyBranching(*this, production_by_order, instance);
       break;
   }
 }

@@ -10,7 +10,7 @@ set(SOURCE_FILES
         src/lotsizing.cpp
         src/lotsizing_instance.cpp
         src/lotsizing_greedy_brancher.cpp
-        )
+        src/lotsizing_dynamic_greedy_brancher.cpp)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
