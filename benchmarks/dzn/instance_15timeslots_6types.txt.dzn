@@ -1,0 +1,31 @@
+% Automatically generated DZN file for Lot Sizing Problem
+
+nb_item_types = 6;
+nb_orders = 9;
+nb_periods = 15;
+inventory_cost = 10;
+
+% item-type-1:		order-1, 
+% item-type-2:		order-2, order-3, 
+% item-type-3:		order-4, 
+% item-type-4:		order-5, 
+% item-type-5:		order-6, order-7, 
+% item-type-6:		order-8, order-9, 
+
+due_period = [ 9, 10, 13, 11, 14, 10, 11, 11, 15,  ];
+change_cost = array2d(Orders0, Orders0, [
+% 	0   o1  o2  o3  o4  o5  o6  o7  o8  o9  
+	 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,   % 0
+	 0,  0,  78,  78,  86,  93,  120,  120,  12,  12,   % o1
+	 0,  165,  0,  0,  193,  213,  178,  178,  12,  12,   % o2
+	 0,  165,  0,  0,  193,  213,  178,  178,  12,  12,   % o3
+	 0,  214,  170,  170,  0,  190,  185,  185,  12,  12,   % o4
+	 0,  178,  177,  177,  185,  0,  196,  196,  12,  12,   % o5
+	 0,  201,  199,  199,  215,  190,  0,  0,  12,  12,   % o6
+	 0,  201,  199,  199,  215,  190,  0,  0,  12,  12,   % o7
+	 0,  201,  100,  100,  88,  190,  14,  14,  0,  0,   % o8
+	 0,  201,  100,  100,  88,  190,  14,  14,  0,  0,   % o9
+]);
+
+nb_of_orders = [1, 2, 1, 1, 2, 2, ];
+item_type = array1d(Orders0, [0, 1, 2, 2, 3, 4, 5, 5, 6, 6, ]);
