@@ -24,13 +24,16 @@
 % OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 % SOFTWARE.
 % 
-% Andrea Rendl, July 2019
+% Author: Andrea Rendl, July 2019
 % ===============================================================================
 
 include "global_cardinality.mzn";
 include "alldifferent.mzn";  % for redundant constraint-1
-include "at_least.mzn"; % for redundant constraint-2
-include "at_most.mzn"; % for redundant constraint-2
+include "at_least.mzn";      % for redundant constraint-2
+include "at_most.mzn";       % for redundant constraint-2
+
+bool: use_redundant_ct1 = true;  % set to false to turn off using the redundant constraint-1
+bool: use_redundant_ct2 = true;  % set to false to turn off using the redundant constraint-2
 
 int: nb_item_types;   % different item types to produce
 int: nb_orders;       % the total number of orders
@@ -101,7 +104,11 @@ constraint
        production_by_order[production_period[order]] = order
    ); 
 % redundant constraint-1   
-constraint alldifferent(production_period);
+constraint 
+  if use_redundant_ct1 then
+    alldifferent(production_period)
+  else true
+  endif;  
    
    
 % sets the number of periods that inventory is necessary for each order   
@@ -111,7 +118,7 @@ constraint
    );   
 
 
-% set "production_order" to the order in which items are produced. We will use this variables
+% set "production_order" to the order in which items are produced. We will use these variables
 % to impose the change_cost constraints   
 constraint 
     production_order[1] = production_by_order[1];  
@@ -124,13 +131,16 @@ constraint
       endif
       )
 ;
-% redundant constraints-2 (sometimes they improve performance, sometimes not)
+% redundant constraint-2 (sometimes they improve performance, sometimes not)
 constraint 
-   forall(o in Orders) (
-      at_least(1, production_order, o) /\
-      at_most(1 + (nb_periods - nb_orders), production_order, o)
-   ); 
-
+ if use_redundant_ct2 then
+    forall(o in Orders) (
+       at_least(1, production_order, o) /\
+       at_most(1 + (nb_periods - nb_orders), production_order, o)
+    )
+ else true 
+ endif;
+   
 
 % the change cost is applied when changing from one item type to another  
 constraint 
