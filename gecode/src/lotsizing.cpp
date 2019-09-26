@@ -9,13 +9,23 @@ LotSizing::LotSizing(const InstanceOptions &opt)
       instance((LotSizingInstanceReader(opt.instance())).generateInstance()),
     // initialise the variable arrays
       production_by_order(*this, instance.getPeriods(), -1, instance.getOrders() - 1),
-      production_period(*this, instance.getOrders(), 0, instance.getPeriods() - 1),
-      inventory_periods(*this, instance.getOrders(), 0, instance.calculateMaxDuePeriod()),
-      change_cost_for_period(*this, instance.getPeriods() - 1, 0, instance.calculateMaxChangeCost()),
-      production_order(*this, instance.getPeriods(), 0, instance.getOrders()),
       objective(*this, 0, instance.calculateUpperBoundForObjective()) {
+  start = std::chrono::high_resolution_clock::now(); // start counting time
   // print the instance for debug reasons
   instance.print();
+  /** For each order, the time period in which it is produced:<br>
+    array[Orders] of var Periods: production_period; */
+  IntVarArgs production_period(*this, instance.getOrders(), 0, instance.getPeriods() - 1);
+  /** the inventory periods that are required for the production plan
+      (i.e. the number of periods the order is completed before the due date)
+    array[Orders] of var 0..max(due_period): inventory_periods; */
+  IntVarArgs inventory_periods(*this, instance.getOrders(), 0, instance.calculateMaxDuePeriod());
+  /** the change cost for changing the machine setup from period p to p+1
+    array[1..nb_periods-1] of var 0..max(change_cost): change_cost_for_period; */
+  IntVarArgs change_cost_for_period(*this, instance.getPeriods() - 1, 0, instance.calculateMaxChangeCost());
+  /** the order in which orders are produced
+    array[Periods] of var Orders0: production_order; */
+  IntVarArgs production_order(*this, instance.getPeriods(), 0, instance.getOrders());
 
   /// CONSTRAINTS
 
@@ -150,27 +160,7 @@ void LotSizing::print(std::ostream &os) const {
     os << production_by_order[period].val() << ", ";
   }
   os << "];\n";
-  os << "production_period = [";
-  for (unsigned order = 0; order < instance.getOrders(); order++) {
-    os << production_period[order].val() << ", ";
-  }
-  os << "];\n";
-  os << "inventory_periods = [";
-  for (unsigned order = 0; order < instance.getOrders(); order++) {
-    os << inventory_periods[order].val() << ", ";
-  }
-  os << "];\n";
-  os << "production_order = [";
-  for (unsigned period = 0; period < instance.getPeriods(); period++) {
-    os << production_order[period].val() << ", ";
-  }
-  os << "];\n";
-  os << "change_cost = [";
-  for (unsigned period = 0; period < instance.getPeriods() - 1; period++) {
-    os << change_cost_for_period[period].val() << ", ";
-  }
-  os << "];\n";
-  os << "production = [";
+  os << "production_by_item_type = [";
   for (unsigned period = 0; period < instance.getPeriods(); period++) {
     int order = production_by_order[period].val();
     if (order != -1) {
@@ -179,8 +169,13 @@ void LotSizing::print(std::ostream &os) const {
       os << order << ", ";
     }
   }
-  os << "]\n";
-  os << "objective = " << objective.val() << "\n--------------------------------------------\n";
+  os << "];\n";
+  os << "objective = " << objective.val() << ";\n";
+  auto stop = high_resolution_clock::now();
+  auto elapsed =
+      std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+  os << "time = " << elapsed.count() << " ms;\n";
+  os << "------------------------------------------------------------------------------------\n";
 }
 
 bool LotSizing::slave(const MetaInfo &mi) {
@@ -188,7 +183,7 @@ bool LotSizing::slave(const MetaInfo &mi) {
   if ((mi.type() == MetaInfo::RESTART) &&
       (mi.restart() > 0) && (percentage > 0.0)) {
     const LotSizing &l = static_cast<const LotSizing &>(*mi.last());
-    // TODO: all other variables should be arg vars, then there is no failure
+    // TODO: all other variables should be arg vars, then there is no failure?
     relax(*this, production_by_order, l.production_by_order, rnd, percentage);
     return false;
   } else {

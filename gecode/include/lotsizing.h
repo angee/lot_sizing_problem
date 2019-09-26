@@ -35,12 +35,14 @@
 #include <gecode/minimodel.hh>
 #include <sstream>
 #include <string>
+#include <chrono>
 
 #include <lotsizing_instance.h>
 #include <lotsizing_greedy_brancher.h>
 #include <lotsizing_dynamic_greedy_brancher.h>
 
 using namespace Gecode;
+using namespace std::chrono;
 
 class LotSizing : public IntMinimizeScript {
  protected:
@@ -56,21 +58,11 @@ class LotSizing : public IntMinimizeScript {
   /** The sequence of orders that are produced:
     array[Periods] of var Orders0: production_by_order; */
   IntVarArray production_by_order;
-  /** For each order, the time period in which it is produced:<br>
-    array[Orders] of var Periods: production_period; */
-  IntVarArray production_period;
-  /** the inventory periods that are required for the production plan
-      (i.e. the number of periods the order is completed before the due date)
-    array[Orders] of var 0..max(due_period): inventory_periods; */
-  IntVarArray inventory_periods;
-  /** the change cost for changing the machine setup from period p to p+1
-    array[1..nb_periods-1] of var 0..max(change_cost): change_cost_for_period; */
-  IntVarArray change_cost_for_period;
-  /** the order in which orders are produced
-    array[Periods] of var Orders0: production_order; */
-  IntVarArray production_order; //
   /** the objective: the sum of all costs */
   IntVar objective;
+
+  /// the start time of when the instance was created through the main constructor
+  high_resolution_clock::time_point start;
 
  public:
   /// Branching to use for model
@@ -84,12 +76,13 @@ class LotSizing : public IntMinimizeScript {
 
   // constructor for cloning
   LotSizing(LotSizing &l)
-      : IntMinimizeScript(l), options(l.options), rnd(l.rnd.seed()), percentage(l.percentage), instance(l.instance) {
+      : IntMinimizeScript(l),
+        options(l.options),
+        rnd(l.rnd.seed()),
+        percentage(l.percentage),
+        instance(l.instance),
+        start(l.start) {
     production_by_order.update(*this, l.production_by_order);
-    production_period.update(*this, l.production_period);
-    inventory_periods.update(*this, l.inventory_periods);
-    change_cost_for_period.update(*this, l.change_cost_for_period);
-    production_order.update(*this, l.production_order);
     objective.update(*this, l.objective);
   }
 
