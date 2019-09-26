@@ -71,6 +71,11 @@ class LotSizing : public IntMinimizeScript {
     BRANCH_GREEDY, ///< Greedy branching: static var order and pick value with smallest change cost
     BRANCH_GREEDY_DYNAMIC ///< Dynamic greedy branching: smallest domain, and if predecessor value set, pick smallest change cost value
   };
+  /// Solving approach for model
+  enum {
+    SOLVE_EXACT,  /// complete search
+    SOLVE_LNS     /// large neighbourhood search
+  };
 
   LotSizing(const InstanceOptions &opt);
 

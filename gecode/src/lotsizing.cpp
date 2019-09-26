@@ -183,7 +183,6 @@ bool LotSizing::slave(const MetaInfo &mi) {
   if ((mi.type() == MetaInfo::RESTART) &&
       (mi.restart() > 0) && (percentage > 0.0)) {
     const LotSizing &l = static_cast<const LotSizing &>(*mi.last());
-    // TODO: all other variables should be arg vars, then there is no failure?
     relax(*this, production_by_order, l.production_by_order, rnd, percentage);
     return false;
   } else {

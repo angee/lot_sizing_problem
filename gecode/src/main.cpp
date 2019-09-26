@@ -33,6 +33,19 @@
 
 using namespace Gecode;
 
+/// Print statistics
+void
+print(const Search::Statistics &stat, bool restart) {
+  using namespace std;
+  cout << "\t\t\tnodes:      " << stat.node << endl
+       << "\t\t\tfailures:   " << stat.fail << endl;
+  if (restart)
+    cout << "\t\t\trestarts:   " << stat.restart << endl
+         << "\t\t\tno-goods:   " << stat.nogood << endl;
+  cout << "\t\t\tpeak depth: " << stat.depth << endl;
+}
+
+
 int main(int argc, char **argv) {
   try {
     InstanceOptions opt("LotSizingProblem");
@@ -41,13 +54,37 @@ int main(int argc, char **argv) {
     opt.iterations(10);
     opt.relax(0.7); // destruction rate
     //opt.time(10 * 1000); // timeout in milliseconds
-    opt.branching(LotSizing::BRANCH_BASE);
+    opt.branching(LotSizing::BRANCH_BASE); // default
     opt.branching(LotSizing::BRANCH_BASE, "base");
     opt.branching(LotSizing::BRANCH_GREEDY, "greedy");
     opt.branching(LotSizing::BRANCH_GREEDY_DYNAMIC, "greedy-dynamic");
+    opt.search(LotSizing::SOLVE_EXACT, "exact");
+    opt.search(LotSizing::SOLVE_LNS, "lns");
+    opt.search(LotSizing::SOLVE_EXACT); // default
     opt.parse(argc, argv);
 
-    IntMinimizeScript::run<LotSizing, BAB, InstanceOptions>(opt);
+    if (opt.search() == LotSizing::SOLVE_EXACT) {
+      IntMinimizeScript::run<LotSizing, BAB, InstanceOptions>(opt);
+    } else { // LNS
+      Search::Options so;
+      so.stop = Search::Stop::time(opt.time());
+      so.cutoff = Search::Cutoff::luby(50);
+
+      int objective = 0;
+      LotSizing *lotSizing = new LotSizing(opt);
+      RBS<LotSizing, BAB> rbs(lotSizing, so);
+      while (LotSizing *s = rbs.next()) {
+        s->print(std::cout);
+        objective = s->cost().val();
+        delete s;
+      }
+      std::cout << "objective = " << objective << ";\n";
+      print(rbs.statistics(), true);
+      if (rbs.stopped()) {
+        std::cout << "Stopped due to time-out..." << std::endl;
+      }
+      delete lotSizing;
+    }
   }
   catch (const std::runtime_error &e) {
     std::cerr << e.what() << std::endl;
