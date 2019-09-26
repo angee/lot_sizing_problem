@@ -67,10 +67,8 @@ class GreedyBranching : public Brancher {
  public:
   GreedyBranching(Home home, ViewArray<Int::IntView> &production, const LotSizingInstance instance0) :
       Brancher(home), production_by_order(production), instance(instance0), current_period(0) {
-    // at first, all orders, including idle time, is possible (TODO: order by due period)
-    for (int order = -1; order < instance.getOrders(); order++) {
-      potential_orders.push_back(order);
-    }
+    // at first, all orders, including idle time, is possible, ordered by due period
+    potential_orders = instance.getOrdersDueAfterPeriodOrderedByDuePeriod(current_period);
   }
   // copy constructor
   GreedyBranching(Space &home, GreedyBranching &gb) : Brancher(home, gb),

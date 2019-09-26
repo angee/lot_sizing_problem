@@ -12,10 +12,8 @@ bool GreedyBranching::status(const Gecode::Space &home) const {
   for (int period = current_period; period < production_by_order.size(); period++) {
     if (!production_by_order[period].assigned()) {
       current_period = period;
-      if (period == 0) { // initialise the orders, TODO: order by due period
-        for (int order = -1; order < instance.getOrders(); order++) {
-          potential_orders.push_back(order);
-        }
+      if (period == 0) { // initialise the orders, ordered by due date
+        potential_orders = instance.getOrdersDueAfterPeriodOrderedByDuePeriod(period);
       } else {
         // since space is not yet failed, there must be some possible order values in the list
         potential_orders =
