@@ -1,5 +1,5 @@
 /**
- * \brief Greedy branching heuristic for the Discrete Lotsizing Problem
+ * \brief Solving the Discrete Lotsizing Problem
  *
  * CSPlib Problem 58: http://www.csplib.org/Problems/prob058/
  *  MIT License
@@ -33,57 +33,53 @@
 
 using namespace Gecode;
 
-/// Print statistics
+/// Print LNS statistics
 void
-print(const Search::Statistics &stat, bool restart) {
+print(const Search::Statistics &stat) {
   using namespace std;
-  cout << "\t\t\tnodes:      " << stat.node << endl
-       << "\t\t\tfailures:   " << stat.fail << endl;
-  if (restart)
-    cout << "\t\t\trestarts:   " << stat.restart << endl
-         << "\t\t\tno-goods:   " << stat.nogood << endl;
-  cout << "\t\t\tpeak depth: " << stat.depth << endl;
+  cout << "\tpropagations:      " << stat.propagate << endl
+       << "\tnodes:      " << stat.node << endl
+       << "\tfailures:   " << stat.fail << endl
+       << "\trestarts:   " << stat.restart << endl
+       << "\tno-goods:   " << stat.nogood << endl
+       << "\tpeak depth: " << stat.depth << endl;
 }
 
+/// Runs Large Neighbourhood search using the restart meta-engine
+void runLNS(const InstanceOptions &opt) {
+  Search::Options so;
+  so.stop = Search::Stop::time(opt.time()); // timeout in milliseconds
+  so.cutoff = Search::Cutoff::luby(50);
+
+  LotSizing *lotSizing = new LotSizing(opt);
+  RBS<LotSizing, BAB> rbs(lotSizing, so);
+  while (LotSizing *s = rbs.next()) {
+    s->print(std::cout); // print the solution
+    delete s;
+  }
+  print(rbs.statistics());
+  delete lotSizing;
+}
 
 int main(int argc, char **argv) {
   try {
     InstanceOptions opt("LotSizingProblem");
-    opt.solutions(0);
-    opt.seed(11);
-    opt.iterations(10);
-    opt.relax(0.7); // destruction rate
-    //opt.time(10 * 1000); // timeout in milliseconds
+    opt.solutions(0); // all solutions
+    opt.seed(11); //default seed
+    opt.relax(0.7); // default destruction rate
     opt.branching(LotSizing::BRANCH_BASE); // default
     opt.branching(LotSizing::BRANCH_BASE, "base");
     opt.branching(LotSizing::BRANCH_GREEDY, "greedy");
     opt.branching(LotSizing::BRANCH_GREEDY_DYNAMIC, "greedy-dynamic");
+    opt.search(LotSizing::SOLVE_EXACT); // default
     opt.search(LotSizing::SOLVE_EXACT, "exact");
     opt.search(LotSizing::SOLVE_LNS, "lns");
-    opt.search(LotSizing::SOLVE_EXACT); // default
     opt.parse(argc, argv);
 
     if (opt.search() == LotSizing::SOLVE_EXACT) {
       IntMinimizeScript::run<LotSizing, BAB, InstanceOptions>(opt);
-    } else { // LNS
-      Search::Options so;
-      so.stop = Search::Stop::time(opt.time());
-      so.cutoff = Search::Cutoff::luby(50);
-
-      int objective = 0;
-      LotSizing *lotSizing = new LotSizing(opt);
-      RBS<LotSizing, BAB> rbs(lotSizing, so);
-      while (LotSizing *s = rbs.next()) {
-        s->print(std::cout);
-        objective = s->cost().val();
-        delete s;
-      }
-      std::cout << "objective = " << objective << ";\n";
-      print(rbs.statistics(), true);
-      if (rbs.stopped()) {
-        std::cout << "Stopped due to time-out..." << std::endl;
-      }
-      delete lotSizing;
+    } else { // else: SOLVE_LNS
+      runLNS(opt);
     }
   }
   catch (const std::runtime_error &e) {

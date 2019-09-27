@@ -12,7 +12,7 @@ LotSizing::LotSizing(const InstanceOptions &opt)
       objective(*this, 0, instance.calculateUpperBoundForObjective()) {
   start = std::chrono::high_resolution_clock::now(); // start counting time
   // print the instance for debug reasons
-  instance.print();
+  //instance.print();
   /** For each order, the time period in which it is produced:<br>
     array[Orders] of var Periods: production_period; */
   IntVarArgs production_period(*this, instance.getOrders(), 0, instance.getPeriods() - 1);

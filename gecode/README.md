@@ -32,10 +32,10 @@ This will create the executable `lotsizing` in the `build/` directory.
 #### Running the solver
 
 After compilation, you can run the solver on one of the text-input format
-benchmarks in [benchmarks/txt/](benchmarks/txt/). Here is an example
+benchmarks in [examples/txt/](examples/txt/). Here is an example
 run:
 
-     ./lotsizing ../../benchmarks/txt/instance_15timeslots_5types.txt   
+     ./lotsizing ../../examples/txt/instance_15timeslots_5types.txt   
      
 Which will solve the respective instance with the standard settings.
 There are 3 different branching strategies and 2 different search 
