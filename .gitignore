@@ -105,3 +105,8 @@ venv.bak/
 
 .idea
 
+# solution and stat files
+.sol
+.stats
+
+.zip
