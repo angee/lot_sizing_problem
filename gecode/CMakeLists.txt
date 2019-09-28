@@ -10,8 +10,8 @@ set(SOURCE_FILES
         src/lotsizing.cpp
         src/lotsizing_instance.cpp
         src/static_greedy_brancher.cpp
-        src/lotsizing_dynamic_greedy_brancher.cpp
-        src/sdf_changecost_brancher.cpp)
+        src/hybrid_greedy_brancher.cpp
+        src/sdf_greedy_brancher.cpp)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 

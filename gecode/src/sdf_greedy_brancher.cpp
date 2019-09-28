@@ -2,7 +2,7 @@
 // Created by andrea on 28.09.19.
 //
 
-#include <sdf_changecost_brancher.h>
+#include <sdf_greedy_brancher.h>
 
 Gecode::Choice *SdfGreedyBranching::choice(Space &) {
   int current_period = findPeriodWithSmallestBestDomain();

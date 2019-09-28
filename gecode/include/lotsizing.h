@@ -39,8 +39,8 @@
 
 #include <lotsizing_instance.h>
 #include <static_greedy_brancher.h>
-#include <lotsizing_dynamic_greedy_brancher.h>
-#include <sdf_changecost_brancher.h>
+#include <hybrid_greedy_brancher.h>
+#include <sdf_greedy_brancher.h>
 
 using namespace Gecode;
 using namespace std::chrono;

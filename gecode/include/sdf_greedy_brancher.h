@@ -30,8 +30,8 @@
  * Author: Andrea Rendl, September 2019
  */
 
-#ifndef LOT_SIZING_PROBLEM_SDF_CHANGECOST_BRANCHER_H
-#define LOT_SIZING_PROBLEM_SDF_CHANGECOST_BRANCHER_H
+#ifndef LOT_SIZING_PROBLEM_SDF_GREEDY_BRANCHER_H
+#define LOT_SIZING_PROBLEM_SDF_GREEDY_BRANCHER_H
 
 #include <gecode/int.hh>
 #include <lotsizing_instance.h>
@@ -134,4 +134,4 @@ inline void sdfGreedyBranching(Home home,
   return SdfGreedyBranching::post(home, production, instance);
 }
 
-#endif //LOT_SIZING_PROBLEM_SDF_CHANGECOST_BRANCHER_H
+#endif //LOT_SIZING_PROBLEM_SDF_GREEDY_BRANCHER_H

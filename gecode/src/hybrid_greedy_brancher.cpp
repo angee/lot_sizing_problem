@@ -1,6 +1,6 @@
-#include <lotsizing_dynamic_greedy_brancher.h>
+#include <hybrid_greedy_brancher.h>
 
-bool DynamicGreedyBranching::status(const Space &) const {
+bool HybridGreedyBranching::status(const Space &) const {
   //std::cout << "Status\n";
   // we still have options for the current period
   if (!potential_orders.empty()) {
