@@ -38,7 +38,7 @@
 #include <chrono>
 
 #include <lotsizing_instance.h>
-#include <lotsizing_greedy_brancher.h>
+#include <static_greedy_brancher.h>
 #include <lotsizing_dynamic_greedy_brancher.h>
 #include <sdf_changecost_brancher.h>
 

@@ -1,11 +1,11 @@
 /**
  * @authors Andrea Rendl, Satalia
  */
-#include <lotsizing_greedy_brancher.h>
+#include <static_greedy_brancher.h>
 
 using namespace Gecode;
 
-bool GreedyBranching::status(const Gecode::Space &home) const {
+bool StaticGreedyBranching::status(const Gecode::Space &home) const {
   if (!potential_orders.empty()) {
     return true;
   }

@@ -1,5 +1,5 @@
-#ifndef LOT_SIZING_PROBLEM_LOTSIZING_GREEDY_BRANCHER_H
-#define LOT_SIZING_PROBLEM_LOTSIZING_GREEDY_BRANCHER_H
+#ifndef LOT_SIZING_PROBLEM_STATIC_GREEDY_BRANCHER_H
+#define LOT_SIZING_PROBLEM_STATIC_GREEDY_BRANCHER_H
 
 /**
  * \brief Greedy branching heuristic for the Discrete Lotsizing Problem
@@ -35,7 +35,7 @@
 
 using namespace Gecode;
 
-class GreedyBranching : public Brancher {
+class StaticGreedyBranching : public Brancher {
   /// Views for the the production order
   ViewArray<Int::IntView> production_by_order;
   /// the problem instance
@@ -65,25 +65,26 @@ class GreedyBranching : public Brancher {
   };
 
  public:
-  GreedyBranching(Home home, ViewArray<Int::IntView> &production, const LotSizingInstance instance0) :
+  StaticGreedyBranching(Home home, ViewArray<Int::IntView> &production, const LotSizingInstance instance0) :
       Brancher(home), production_by_order(production), instance(instance0), current_period(0) {
     // at first, all orders, including idle time, is possible, ordered by due period
     potential_orders = instance.getOrdersDueAfterPeriodOrderedByDuePeriod(current_period);
   }
   // copy constructor
-  GreedyBranching(Space &home, GreedyBranching &gb) : Brancher(home, gb),
-                                                      production_by_order(gb.production_by_order),
-                                                      instance(gb.instance), current_period(gb.current_period) {
+  StaticGreedyBranching(Space &home, StaticGreedyBranching &gb) : Brancher(home, gb),
+                                                                  production_by_order(gb.production_by_order),
+                                                                  instance(gb.instance),
+                                                                  current_period(gb.current_period) {
     production_by_order.update(home, gb.production_by_order);
   }
 
   static void post(Home home, ViewArray<Int::IntView> &p, const LotSizingInstance instance) {
-    (void) new(home) GreedyBranching(home, p, instance);
+    (void) new(home) StaticGreedyBranching(home, p, instance);
   }
 
   /// Copy brancher
   virtual Actor *copy(Space &home) {
-    return new(home) GreedyBranching(home, *this);
+    return new(home) StaticGreedyBranching(home, *this);
   }
 
   /// Check status of brancher, return true if alternatives left
@@ -129,7 +130,7 @@ class GreedyBranching : public Brancher {
 /// Post branching (assumes that \a s is sorted)
 inline void greedyBranching(Home home, const IntVarArgs &production_by_order, const LotSizingInstance &instance) {
   ViewArray<Int::IntView> production(home, production_by_order);
-  return GreedyBranching::post(home, production, instance);
+  return StaticGreedyBranching::post(home, production, instance);
 }
 
-#endif //LOT_SIZING_PROBLEM_LOTSIZING_GREEDY_BRANCHER_H
+#endif //LOT_SIZING_PROBLEM_STATIC_GREEDY_BRANCHER_H
