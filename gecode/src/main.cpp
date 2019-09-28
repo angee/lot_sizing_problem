@@ -67,10 +67,11 @@ int main(int argc, char **argv) {
     opt.solutions(0); // all solutions
     opt.seed(11); //default seed
     opt.relax(0.7); // default destruction rate
-    opt.branching(LotSizing::BRANCH_BASE); // default
-    opt.branching(LotSizing::BRANCH_BASE, "base");
-    opt.branching(LotSizing::BRANCH_GREEDY, "greedy");
-    opt.branching(LotSizing::BRANCH_GREEDY_DYNAMIC, "greedy-dynamic");
+    opt.branching(LotSizing::BRANCH_SDF_RANDOM); // default
+    opt.branching(LotSizing::BRANCH_SDF_RANDOM, "sdf-random");
+    opt.branching(LotSizing::BRANCH_STATIC_GREEDY, "static-greedy");
+    opt.branching(LotSizing::BRANCH_HYBRID_GREEDY, "hybrid-greedy");
+    opt.branching(LotSizing::BRANCH_SDF_GREEDY, "sdf-greedy");
     opt.search(LotSizing::SOLVE_EXACT); // default
     opt.search(LotSizing::SOLVE_EXACT, "exact");
     opt.search(LotSizing::SOLVE_LNS, "lns");

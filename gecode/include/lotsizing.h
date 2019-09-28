@@ -40,6 +40,7 @@
 #include <lotsizing_instance.h>
 #include <lotsizing_greedy_brancher.h>
 #include <lotsizing_dynamic_greedy_brancher.h>
+#include <sdf_changecost_brancher.h>
 
 using namespace Gecode;
 using namespace std::chrono;
@@ -67,9 +68,10 @@ class LotSizing : public IntMinimizeScript {
  public:
   /// Branching to use for model
   enum {
-    BRANCH_BASE, ///< Base branching: smallest domain and random value
-    BRANCH_GREEDY, ///< Greedy branching: static var order and pick value with smallest change cost
-    BRANCH_GREEDY_DYNAMIC ///< Dynamic greedy branching: smallest domain, and if predecessor value set, pick smallest change cost value
+    BRANCH_SDF_RANDOM, ///< Base branching: smallest domain and random value
+    BRANCH_STATIC_GREEDY, ///< Greedy branching: static var order and pick value with smallest change cost
+    BRANCH_HYBRID_GREEDY, ///< Dynamic greedy branching: smallest domain, and if predecessor value set, pick smallest change cost value
+    BRANCH_SDF_GREEDY /// Smallest domain first with greedy value selection
   };
   /// Solving approach for model
   enum {

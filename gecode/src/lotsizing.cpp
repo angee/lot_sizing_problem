@@ -145,11 +145,13 @@ LotSizing::LotSizing(const InstanceOptions &opt)
 
   // branching instructions
   switch (opt.branching()) {
-    case BRANCH_BASE:branch(*this, production_by_order, INT_VAR_SIZE_MIN(), INT_VAL_RND(rnd));
+    case BRANCH_SDF_RANDOM:branch(*this, production_by_order, INT_VAR_SIZE_MIN(), INT_VAL_RND(rnd));
       break;
-    case BRANCH_GREEDY:greedyBranching(*this, production_by_order, instance);
+    case BRANCH_STATIC_GREEDY:greedyBranching(*this, production_by_order, instance);
       break;
-    case BRANCH_GREEDY_DYNAMIC:dynamicGreedyBranching(*this, production_by_order, instance);
+    case BRANCH_HYBRID_GREEDY:dynamicGreedyBranching(*this, production_by_order, instance);
+      break;
+    case BRANCH_SDF_GREEDY:sdfGreedyBranching(*this, production_by_order, instance);
       break;
   }
 }

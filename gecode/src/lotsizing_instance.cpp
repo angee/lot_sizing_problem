@@ -96,7 +96,8 @@ int LotSizingInstance::calculateUpperBoundForObjective() const {
   return max_change_costs + max_inventory_cost;
 }
 
-std::vector<int> LotSizingInstance::getOrdersDueAfterPeriodOrderedByChangeCost(int period, int previous_order) const {
+std::vector<int> LotSizingInstance::calculateOrdersDueAfterPeriodOrderedByChangeCost(int period,
+                                                                                     int previous_order) const {
   std::vector<std::pair<int, int>> orders;
   for (unsigned order = 0; order < due_period_per_order.size(); order++) {
     if (due_period_per_order[order] >= period)
@@ -116,7 +117,7 @@ std::vector<int> LotSizingInstance::getOrdersDueAfterPeriodOrderedByChangeCost(i
   return ordered_orders;
 }
 
-std::vector<int> LotSizingInstance::getOrdersDueAfterPeriodOrderedByDuePeriod(int period) const {
+std::vector<int> LotSizingInstance::calculateOrdersDueAfterPeriodOrderedByDuePeriod(int period) const {
   std::vector<std::pair<int, int>> orders;
   for (unsigned order = 0; order < due_period_per_order.size(); order++) {
     if (due_period_per_order[order] >= period)

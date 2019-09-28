@@ -52,6 +52,12 @@ class LotSizingInstance {
   const std::vector<int> num_orders_per_type;
   /** the change costs for changing from type i to type j*/
   const std::vector<std::vector<int>> change_costs;
+  /** orders_ordered_by_due_period[p] returns the orders */
+  std::vector<std::vector<int>> orders_ordered_by_due_period;
+  /** */
+  std::vector<std::vector<std::vector<int>>> orders_ordered_by_change_cost;
+
+
 
  public:
   LotSizingInstance(int _num_periods,
@@ -67,7 +73,18 @@ class LotSizingInstance {
       inventory_cost(_inventory_costs),
       due_period_per_order(std::move(_due_period_per_order)),
       num_orders_per_type(std::move(_num_orders_per_type)),
-      change_costs(std::move(_change_costs)) {}
+      change_costs(std::move(_change_costs)) {
+//    for(unsigned p=0; p<num_periods; p++) {
+//      orders_ordered_by_due_period.push_back(calculateOrdersDueAfterPeriodOrderedByDuePeriod(p));
+//    }
+//    for(unsigned p=0; p<num_periods; p++) {
+//      std::vector<std::vector<int>> mat;
+//      for(int prev_order = -1; prev_order < num_orders; prev_order++) {
+//        mat.push_back(calculateOrdersDueAfterPeriodOrderedByChangeCost(p, prev_order));
+//      }
+//      orders_ordered_by_change_cost.push_back(mat);
+//    }
+  }
 
   // copy constructor
   LotSizingInstance(const LotSizingInstance &l) :
@@ -77,7 +94,9 @@ class LotSizingInstance {
       inventory_cost(l.inventory_cost),
       due_period_per_order(l.due_period_per_order),
       num_orders_per_type(l.num_orders_per_type),
-      change_costs(l.change_costs) {
+      change_costs(l.change_costs),
+      orders_ordered_by_due_period(l.orders_ordered_by_due_period),
+      orders_ordered_by_change_cost(l.orders_ordered_by_change_cost) {
   }
 
   /** prints a summary of the instance setup */
@@ -148,6 +167,25 @@ class LotSizingInstance {
   /** returns the item type of the given order */
   int getTypeOfOrder(int order) const;
 
+  std::vector<int> getOrdersDueAfterPeriodOrderedByChangeCost(int period, int previous_order) const {
+//    if(!(period >= 0 && period < num_periods && previous_order >= -1 && previous_order < num_orders)) {
+//      std::stringstream errorMsg;
+//      errorMsg << "Invalid period (" << period << ") or order (" << previous_order << ") in obtaining orders ordered by change costs.";
+//      throw std::runtime_error(errorMsg.str());
+//    }
+//    previous_order++; // increase since the order might be the idle order "-1"
+//    return orders_ordered_by_change_cost[period][previous_order];
+    return calculateOrdersDueAfterPeriodOrderedByChangeCost(period, previous_order);
+  }
+
+  std::vector<int> getOrdersDueAfterPeriodOrderedByDuePeriod(int period) const {
+//    if(!(period >= 0 && period < num_periods))
+//      throw std::runtime_error("Invalid period in obtaining orders ordered by due period.");
+//    return orders_ordered_by_due_period[period];
+    return calculateOrdersDueAfterPeriodOrderedByDuePeriod(period);
+  }
+
+ private:
   /**
    * Returns the vector of orders that are due after the given period. They are also ordered by the amount of
    * change costs that apply if order o is produced after the given previous order.
@@ -157,7 +195,7 @@ class LotSizingInstance {
    * change costs that apply if order o is produced after the given previous order, where the orders with the
    * cheapest change cost come first.
    */
-  std::vector<int> getOrdersDueAfterPeriodOrderedByChangeCost(int period, int previous_order) const;
+  std::vector<int> calculateOrdersDueAfterPeriodOrderedByChangeCost(int period, int previous_order) const;
 
   /**
    * Returns the vector of orders that are due after the given period. They are also ordered by how close the due
@@ -166,7 +204,7 @@ class LotSizingInstance {
    * @return the vector of orders that are due after the given period. They are also ordered by how close the due
    * period is
    */
-  std::vector<int> getOrdersDueAfterPeriodOrderedByDuePeriod(int period) const;
+  std::vector<int> calculateOrdersDueAfterPeriodOrderedByDuePeriod(int period) const;
 
 };
 
