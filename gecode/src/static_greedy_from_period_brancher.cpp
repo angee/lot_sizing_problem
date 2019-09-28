@@ -14,6 +14,7 @@ bool StaticGreedyFromPeriodBranching::status(const Gecode::Space &home) const {
   }
 
   for (int period = current_period; period < production_by_order.size(); period++) {
+
     if (!production_by_order[period].assigned()) {
       current_period = period;
       if (period == 0 || !production_by_order[period - 1].assigned()) { // initialise the orders, ordered by due date
@@ -33,8 +34,8 @@ bool StaticGreedyFromPeriodBranching::status(const Gecode::Space &home) const {
       }
       return true;
     } else {
-      if (period == production_by_order.size() - 1) {
-        period = -1;
+      if (period == production_by_order.size() - 1 && !allVarsAreAssigned()) {
+        period = -1; // go again to the start
       } else if (period == start_period - 1 && allVarsAreAssigned()) {
         return false; // we reached the end of our search
       }
