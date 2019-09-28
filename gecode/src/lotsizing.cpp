@@ -153,6 +153,11 @@ LotSizing::LotSizing(const InstanceOptions &opt)
       break;
     case BRANCH_SDF_GREEDY:sdfGreedyBranching(*this, production_by_order, instance);
       break;
+    case BRANCH_STATIC_GREEDY_FIXED_PERIOD:
+      // terrible hack to parameterise this search!
+      int start_period = instance.getPeriods() - 1 < opt.iterations() ? instance.getPeriods() / 2 : opt.iterations();
+      staticGreedyFixedPeriodBranching(*this, production_by_order, instance, start_period);
+      break;
   }
 }
 

@@ -11,7 +11,8 @@ set(SOURCE_FILES
         src/lotsizing_instance.cpp
         src/static_greedy_brancher.cpp
         src/hybrid_greedy_brancher.cpp
-        src/sdf_greedy_brancher.cpp)
+        src/sdf_greedy_brancher.cpp
+        src/static_greedy_from_period_brancher.cpp)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 

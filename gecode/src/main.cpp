@@ -70,6 +70,7 @@ int main(int argc, char **argv) {
     opt.branching(LotSizing::BRANCH_SDF_RANDOM); // default
     opt.branching(LotSizing::BRANCH_SDF_RANDOM, "sdf-random");
     opt.branching(LotSizing::BRANCH_STATIC_GREEDY, "static-greedy");
+    opt.branching(LotSizing::BRANCH_STATIC_GREEDY_FIXED_PERIOD, "static-greedy-period");
     opt.branching(LotSizing::BRANCH_HYBRID_GREEDY, "hybrid-greedy");
     opt.branching(LotSizing::BRANCH_SDF_GREEDY, "sdf-greedy");
     opt.search(LotSizing::SOLVE_EXACT); // default
