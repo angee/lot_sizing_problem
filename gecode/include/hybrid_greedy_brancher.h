@@ -126,9 +126,9 @@ class HybridGreedyBranching : public Brancher {
 };
 
 /// Post branching (assumes that \a s is sorted)
-inline void dynamicGreedyBranching(Home home,
-                                   const IntVarArgs &production_by_order,
-                                   const LotSizingInstance &instance) {
+inline void hybridGreedyBranching(Home home,
+                                  const IntVarArgs &production_by_order,
+                                  const LotSizingInstance &instance) {
   ViewArray<Int::IntView> production(home, production_by_order);
   return HybridGreedyBranching::post(home, production, instance);
 }

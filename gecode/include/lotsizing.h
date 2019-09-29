@@ -67,6 +67,10 @@ class LotSizing : public IntMinimizeScript {
   high_resolution_clock::time_point start;
 
  public:
+  enum {
+    MODEL_ONE_COUNT, // use one main count constraint
+    MODEL_N_COUNT    // use several count constraints
+  };
   /// Branching to use for model
   enum {
     BRANCH_SDF_RANDOM, ///< Base branching: smallest domain and random value

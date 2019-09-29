@@ -10,9 +10,12 @@ LotSizing::LotSizing(const InstanceOptions &opt)
     // initialise the variable arrays
       production_by_order(*this, instance.getPeriods(), -1, instance.getOrders() - 1),
       objective(*this, 0, instance.calculateUpperBoundForObjective()) {
+
   start = std::chrono::high_resolution_clock::now(); // start counting time
-  // print the instance for debug reasons
-  //instance.print();
+  //instance.print(); // print the instance for debug reasons
+
+  // HELPER VARIABLES
+
   /** For each order, the time period in which it is produced:<br>
     array[Orders] of var Periods: production_period; */
   IntVarArgs production_period(*this, instance.getOrders(), 0, instance.getPeriods() - 1);
@@ -30,20 +33,20 @@ LotSizing::LotSizing(const InstanceOptions &opt)
   /// CONSTRAINTS
 
   // (1) the number of times each order is produced
-//    // VERSION-1
-//    IntSetArgs occurrence(instance.getOrders()+1);
-//    int num_idle_periods = instance.getPeriods() - instance.getOrders();
-//    occurrence[0] = IntSet({num_idle_periods});
-//    for(unsigned order = 1; order <= instance.getOrders(); order++) {
-//      occurrence[order] = IntSet({1});
-//    }
-//    count(*this, production_by_order, occurrence, IntArgs::create(instance.getOrders()+1, -1));
-
-  // VERSION-2
-  for (unsigned order = 0; order < instance.getOrders(); order++) {
-    count(*this, production_by_order, order, IRT_EQ, 1); // each order is produced exactly once
+  if (opt.model() == MODEL_ONE_COUNT) { // use one main count constraint
+    IntSetArgs occurrence(instance.getOrders() + 1);
+    int num_idle_periods = instance.getPeriods() - instance.getOrders();
+    occurrence[0] = IntSet({num_idle_periods});
+    for (unsigned order = 1; order <= instance.getOrders(); order++) {
+      occurrence[order] = IntSet({1});
+    }
+    count(*this, production_by_order, occurrence, IntArgs::create(instance.getOrders() + 1, -1), IPL_DOM);
+  } else { // MODEL_N_COUNT: use several count constraints
+    for (unsigned order = 0; order < instance.getOrders(); order++) {
+      count(*this, production_by_order, order, IRT_EQ, 1, IPL_DOM); // each order is produced exactly once
+    }
+    count(*this, production_by_order, -1, IRT_EQ, instance.getPeriods() - instance.getOrders(), IPL_DOM); // idle times
   }
-  count(*this, production_by_order, -1, IRT_EQ, instance.getPeriods() - instance.getOrders()); // idle times
 
   // (2) Don't produce the order AFTER its due date
   for (unsigned order = 0; order < instance.getOrders(); order++) {
@@ -60,9 +63,6 @@ LotSizing::LotSizing(const InstanceOptions &opt)
     // production_by_order[production_period[order]] = order
     element(*this, production_by_order, production_period[order], order);
   }
-
-  // (4) Redundant constraints: alldiff(production_period)
-  //distinct(*this, production_period);
 
   // (5) sets the number of periods that inventory is necessary for each order
   for (unsigned order = 0; order < instance.getOrders(); order++) {
@@ -143,18 +143,20 @@ LotSizing::LotSizing(const InstanceOptions &opt)
   }
   linear(*this, a, x, IRT_EQ, objective);
 
+  //// SEARCH
+
   // branching instructions
   switch (opt.branching()) {
     case BRANCH_SDF_RANDOM:branch(*this, production_by_order, INT_VAR_SIZE_MIN(), INT_VAL_RND(rnd));
       break;
     case BRANCH_STATIC_GREEDY:greedyBranching(*this, production_by_order, instance);
       break;
-    case BRANCH_HYBRID_GREEDY:dynamicGreedyBranching(*this, production_by_order, instance);
+    case BRANCH_HYBRID_GREEDY:hybridGreedyBranching(*this, production_by_order, instance);
       break;
     case BRANCH_SDF_GREEDY:sdfGreedyBranching(*this, production_by_order, instance);
       break;
     case BRANCH_STATIC_GREEDY_FIXED_PERIOD:
-      // terrible hack to parameterise this search!
+      // terrible hack to parameterise this search! Note that this brancher ist still a bit buggy
       int start_period = instance.getPeriods() - 1 < opt.iterations() ? instance.getPeriods() / 2 : opt.iterations();
       staticGreedyFixedPeriodBranching(*this, production_by_order, instance, start_period);
       break;

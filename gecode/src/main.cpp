@@ -67,6 +67,9 @@ int main(int argc, char **argv) {
     opt.solutions(0); // all solutions
     opt.seed(11); //default seed
     opt.relax(0.7); // default destruction rate
+    opt.model(LotSizing::MODEL_N_COUNT); // default model setting
+    opt.model(LotSizing::MODEL_ONE_COUNT, "one-count");
+    opt.model(LotSizing::MODEL_N_COUNT, "n-count");
     opt.branching(LotSizing::BRANCH_SDF_RANDOM); // default
     opt.branching(LotSizing::BRANCH_SDF_RANDOM, "sdf-random");
     opt.branching(LotSizing::BRANCH_STATIC_GREEDY, "static-greedy");
