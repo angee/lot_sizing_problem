@@ -18,23 +18,23 @@ EXECUTABLE=${PATH_TO_EXECUTABLE}lotsizing
 
 # Specify what features we want to test in this benchmark run
 
-declare -a search_options=("exact" "lns")
-declare -a branching_options=("base" "greedy" "greedy-dynamic") 
+declare -a search_options=("exact")
+declare -a branching_options=("sdf-random" "static-greedy" "hybrid-greedy")
 #declare -a model_options=("base" "redundant")         # this will probably be ignored
-declare -a seed_options=(1 7 11) 
+#declare -a seed_options=(1 7 11) 
 declare -a lns_destruction_rates=(0.5 0.7 0.9) 
 
 NUM_SEARCH=${#search_options[@]}            # number of search options
 NUM_BRANCHING=${#branching_options[@]}      # number of branching options
-NUM_SEEDS=${#seeds_options[@]}              # number of seed options
+#NUM_SEEDS=${#seeds_options[@]}              # number of seed options
 NUM_LNS_RATE=${#lns_destruction_rates[@]}   # number of LNS destruction rates
 
-TIME_OUT=1000  # the timeout in milliseconds
+TIME_OUT=7200000  # the timeout in milliseconds
 
 # ==================================================================================================================== #
 
 # edit here the pattern matching expression to narrow down the examples to run
-for problemfile in ../examples/txt/pigment20a.psp; do
+for problemfile in ../examples/txt/*.txt; do
     
     for ((s=0;s<=$NUM_SEARCH-1;s++)); do
 	search=${search_options[$s]}
