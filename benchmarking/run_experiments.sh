@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # ==================================================================================================================== #
 #
-# NOTE: Run the tests in _this_ directory, because you will need the csv files in the regressionTestFiles/ directory
-#       to compare the results of your test runs.
+#  Running benchmark tests for the Lotsizing problem. Adapt line 38 to choose the instances you want to solve.
+#
+#  NOTE: If you do not the script from _this_ directory, then you will need to adapt the paths to the executable.
 #
 # ==================================================================================================================== #
 
@@ -59,7 +60,6 @@ for problemfile in ../examples/txt/*.txt; do
 	    else
 		echo "----- EXACT -----"
 		solution_file=${problemfile}_${search}_${branching}.sol
-		echo "solution file = ${solution_file}"
 		stats_file=${problemfile}_${search}_${branching}.stats
 		
 		echo "${EXECUTABLE} --time $TIME_OUT --search ${search} --branching ${branching} --file-sol ${solution_file} -file-stat ${stats_file} ${problemfile}"

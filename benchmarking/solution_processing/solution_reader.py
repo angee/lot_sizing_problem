@@ -62,16 +62,12 @@ class SolutionReader:
         for line in lines:
             if line.startswith("\truntime"):
                 self._runtime_sec = float(line.split("e:")[1].split("(")[1].split("m")[0]) / 1000
-                print("runtime = " + str(self._runtime_sec))
             elif line.startswith("\tnodes"):
                 self._nodes = int(line.split(":")[1].strip())
-                print("nodes = " + str(self._nodes))
             elif line.startswith("\tfail"):
                 self._failures = int(line.split(":")[1].strip())
-                print("failures = " + str(self._failures))
             elif line.startswith("\tsolu"):
                 self._solutions = int(line.split(":")[1].strip())
-                print("solutions = " + str(self._solutions))
             else:
                 continue
 
