@@ -1,6 +1,8 @@
 % ===============================================================================
 % Discrete Lot Sizing problem
 %
+% Constraint Programming model, Optimisation challenge
+%
 % CSPlib Problem 58: http://www.csplib.org/Problems/prob058/
 % MIT License
 %
@@ -180,7 +182,13 @@ constraint
    objective = sum(p in 1..nb_periods-1) (change_cost_for_period[p]) 
                + sum(o in Orders) (inventory_periods[o]) * inventory_cost;
 
-solve :: seq_search(
-                [int_search(production_by_order, first_fail, indomain_random, complete),
-                 int_search(inventory_periods, impact, indomain_min, complete)])               
-  minimize objective;
+solve :: int_search(production_by_order, first_fail, indomain_random, complete)               
+  minimize objective;  
+  
+  
+% =============== OUTPUT =======================================================
+  
+output
+["production = [" ++ concat([ show(fix(production_by_order[p])-1) ++ ", " | p in Periods]) ++ "];\n"] ++
+["objective = " ++ show(fix(objective)) ++ ";\n"]
+;   
